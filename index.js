@@ -1,52 +1,23 @@
 const express = require("express");
 const cors = require('cors');
-const httpProxy = require('http-proxy'); 
 const { response } = require("express");
+const tremendousRoutes = require("./routes/Tremendous.routes"),
+    twilioRoutes = require("./routes/Twilio.routes"),
+    userRoutes = require("./routes/user");
+
+
 
 const app = express()
-const port = 8080
 
 app.set('x-powered-by' , 'Express.js');
 app.use(cors());
+app.use(express.json());
 
-//Use this options for creating a reverse proxy to other domains.
-const options = {
-    changeOrigin: true,
-    target: {
-        https: true
-    }
-}
-//Create a reverse proxy server
-const apiProxy = httpProxy.createProxyServer(options);
+app.use(tremendousRoutes);
 
-// TODO: set this based on process status PROD/DEV
-const devTremendousServer = 'https://testflight.tremendous.com'; 
-// const prodTremendousServer = 'https://www.tremendous.com';
+app.use(twilioRoutes);
 
-
-app.get('/api/v2/funding_sources', (req, res) => {
-    console.log(`redirecting to Tremendous ${req.url}`);
-    apiProxy.web(req, res, {target: devTremendousServer});
-});
-
-app.post('/api/v2/orders', (req, res) => {
-    console.log(`redirecting to Tremendous ${req.url}`);
-    apiProxy.web(req, res, {target: devTremendousServer}); 
-});
-
-
-const twilioServer = "https://verify.twilio.com";
-const serviceSid = 'VAf04a776258bab3e2c11286dc4152cf3d';
-
-app.post(`/v2/Services/${serviceSid}/Verifications`, (req, res) => {
-    console.log(`redirecting to Twilio ${req.url}`);
-    apiProxy.web(req, res, {target: twilioServer}); 
-});
-
-app.post(`/v2/Services/${serviceSid}/VerificationCheck`, (req, res) => {
-    console.log(`redirecting to Twilio ${req.url}`);
-    apiProxy.web(req, res, {target: twilioServer}); 
-});
+// app.use(userRoutes);
 
 // default route
 app.use((req, res) => {
@@ -54,6 +25,6 @@ app.use((req, res) => {
 });
 
 //Start the server
-app.listen(port, () => {
-    console.log(`Server is up on port ${port}.`);
+app.listen(process.env.PORT || 8080, () => {
+    console.log(`Server is listening on port 8080.`);
 });
