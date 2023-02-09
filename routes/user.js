@@ -3,7 +3,7 @@ var express = require("express"),
   {
     signup,
     signin
-  } = require("../controllers/auth.controller.js");
+  } = require("../controllers/auth.controller");
 
   router.post("/register", signup, function (req, res) {
 

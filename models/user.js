@@ -1,4 +1,4 @@
-var userSchema = { // TODO: ERROR: User is not a constructor 
+var userSchema = {  
     fullname: {
         type: String,
     },
@@ -17,6 +17,5 @@ var userSchema = { // TODO: ERROR: User is not a constructor
       type: String,
       required: true
     }
-}
+};
 
-module.exports = userSchema;
