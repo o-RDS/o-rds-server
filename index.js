@@ -4,6 +4,7 @@ const { response } = require("express");
 const tremendousRoutes = require("./routes/Tremendous.routes"),
     twilioRoutes = require("./routes/Twilio.routes"),
     userRoutes = require("./routes/user");
+require("dotenv").config();
 
 const app = express()
 

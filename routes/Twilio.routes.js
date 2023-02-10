@@ -14,15 +14,21 @@ const options = {
 const apiProxy = httpProxy.createProxyServer(options);
 
 const twilioServer = "https://verify.twilio.com";
-const serviceSid = 'VAf04a776258bab3e2c11286dc4152cf3d';
+// const serviceSid = 'VAf04a776258bab3e2c11286dc4152cf3d';
 
-router.post(`/v2/Services/${serviceSid}/Verifications`, (req, res) => {
+router.post(`/v2/Services/${process.env.TWILIO_SERVICE_ID}/Verifications`, (req, res) => {
     console.log(`redirecting to Twilio ${req.url}`);
+
+    // coming from survey
+
     apiProxy.web(req, res, {target: twilioServer}); 
 });
 
-router.post(`/v2/Services/${serviceSid}/VerificationCheck`, (req, res) => {
+router.post(`/v2/Services/${process.env.TWILIO_SERVICE_ID}/VerificationCheck`, (req, res) => {
     console.log(`redirecting to Twilio ${req.url}`);
+
+    // coming from survey
+
     apiProxy.web(req, res, {target: twilioServer}); 
 });
 

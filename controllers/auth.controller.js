@@ -1,3 +1,5 @@
+var jwt = require("jsonwebtoken");
+var bcrypt = require("bcrypt");
 var fs = require('fs');
 
 exports.signup = (req, res) => {
@@ -6,17 +8,18 @@ exports.signup = (req, res) => {
         fullname: req.body.fullname,
         email: req.body.email,
         role: req.body.role,
-        password: req.body.password
+        password:  bcrypt.hashSync(req.body.password, 8)
     };
 
 
     saveUserToFolder(user, function(err) {
         if (err) {
             console.log(err);
-            res.status(404).send('User not saved');
+            res.status(404).send('User not saved.');
             return;
         }
-        res.status(200).send('User registered successfully');
+        res.status(200).send('User registered successfully.');
+        console.log("New user registered");
     });
     
 
@@ -25,16 +28,55 @@ exports.signup = (req, res) => {
 exports.signin = (req, res) => {
     fs.readFile(`./users.data/${req.body.email}.json`, (err, data) => {
         if (err) {
+            console.log(err);
             res.status(500).send(err);
             return;
         }
 
         var user = JSON.parse(data);
-        console.log(user);
-        // check if user exists. if not, send 404, return
-    });
+        if (!user) {
+            console.log("User not found");
+            return res.status(404).send({
+                message: "User not found."
+            });
+        }
 
-    // user exists
+        // compare passwords
+        var passwordValid = bcrypt.compareSync(
+            req.body.password,
+            user.password
+        );
+        // checking if password was valid and send response accordingly
+        if (!passwordValid) {
+            console.log("Invalid password");
+            return res.status(401)
+            .send({
+                accessToken: null,
+                message: "Invalid Password!"
+            });
+        }
+    
+        //signing token with user id
+        var token = jwt.sign({
+            email: user.email
+        }, process.env.JWT_API_SECRET, {
+            // in seconds (24 hours)
+            expiresIn: 86400
+        });
+
+        res.status(200)
+        .send({
+            user: {
+                email: user.email,
+                fullname: user.fullname,
+                role: user.role
+            },
+            message: "Login successful",
+            accessToken: token
+        });
+        console.log("User login successful");
+
+    });
 
 };
 
