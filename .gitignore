@@ -1,2 +1,3 @@
 .env
 users.data/
+/node_modules
