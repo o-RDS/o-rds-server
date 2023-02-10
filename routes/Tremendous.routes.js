@@ -14,8 +14,6 @@ const options = {
 const apiProxy = httpProxy.createProxyServer(options);
 
 
-const TremendousServer = process.env.TREMENDOUS_SERVER; 
-
 
 router.get('/api/v2/campaigns', (req, res) => {
     console.log(`redirecting to Tremendous ${req.url}`);
@@ -23,7 +21,7 @@ router.get('/api/v2/campaigns', (req, res) => {
     // verify JWT
     // add on Tremendous Auth, then send
 
-    apiProxy.web(req, res, {target: TremendousServer});
+    apiProxy.web(req, res, {target:  process.env.TREMENDOUS_SERVER});
 });
 
 router.get('/api/v2/funding_sources', (req, res) => {
@@ -31,8 +29,9 @@ router.get('/api/v2/funding_sources', (req, res) => {
 
     // verify JWT
     // add on Tremendous Auth, then send
+    req.headers.authorization = process.env.TREMENDOUS_BEARER_TOKEN;
 
-    apiProxy.web(req, res, {target: TremendousServer});
+    apiProxy.web(req, res, {target:  process.env.TREMENDOUS_SERVER});
 });
 
 router.post('/api/v2/orders', (req, res) => {
@@ -40,7 +39,7 @@ router.post('/api/v2/orders', (req, res) => {
 
     // coming from survey
 
-    apiProxy.web(req, res, {target: TremendousServer}); 
+    apiProxy.web(req, res, {target:  process.env.TREMENDOUS_SERVER}); 
 });
 
 module.exports = router;
