@@ -18,6 +18,8 @@ router.post(`/v2/Services/${process.env.TWILIO_SERVICE_ID}/Verifications`, (req,
     console.log(`redirecting to Twilio ${req.url}`);
 
     // coming from survey
+    // Add Twilio auth
+    req.headers.authorization = 'Basic ' + Buffer.from(process.env.TWILIO_ACCOUNT_SID + ":" + process.env.TWILIO_AUTH_TOKEN).toString('base64');
 
     apiProxy.web(req, res, {target: process.env.TWILIO_SERVER}); 
 });
@@ -26,6 +28,8 @@ router.post(`/v2/Services/${process.env.TWILIO_SERVICE_ID}/VerificationCheck`, (
     console.log(`redirecting to Twilio ${req.url}`);
 
     // coming from survey
+    // Add Twilio auth
+    req.headers.authorization = 'Basic ' + Buffer.from(process.env.TWILIO_ACCOUNT_SID + ":" + process.env.TWILIO_AUTH_TOKEN).toString('base64');
 
     apiProxy.web(req, res, {target: process.env.TWILIO_SERVER}); 
 });
