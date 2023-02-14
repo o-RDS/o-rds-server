@@ -1,6 +1,7 @@
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcrypt");
 var fs = require('fs');
+var crypto = require('crypto');
 require("dotenv").config();
 
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
@@ -12,6 +13,7 @@ exports.verification = (req, res) => {
     var to = req.body.to;
 
     // hash the phone number
+    const hash = crypto.createHash('sha256').update(to).digest('base64');
 
     // create code and message
     const code = Math.floor(100000 + Math.random() * 900000);
@@ -20,7 +22,7 @@ exports.verification = (req, res) => {
 
     // create user 
     var surveyTaker = {
-        hash: to, // replace with hashed number
+        hash: hash, 
         code: bcrypt.hashSync(code.toString(), 8)
     };
 
@@ -47,12 +49,10 @@ exports.verification = (req, res) => {
 
 exports.verificationCheck = (req, res) => {
 
-    // get phone number from req
-
     // hash the phone number
-    var phoneHash = req.body.to;
+    const hash = crypto.createHash('sha256').update(req.body.to).digest('base64');
 
-    fs.readFile(`./survey.data/${phoneHash}.json`, (err, data) => {
+    fs.readFile(`./survey.data/${hash}.json`, (err, data) => {
         if (err) {
             console.log(err);
             res.status(500).send(err);
