@@ -16,13 +16,16 @@
   },
   "homepage": "https://github.com/o-RDS/o-rds-server#readme",
   "dependencies": {
+    "api": "^5.0.7",
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "fs": "^0.0.1-security",
     "http-proxy": "^1.18.1",
-    "jsonwebtoken": "^9.0.0"
+    "jsonwebtoken": "^9.0.0",
+    "node-fetch": "^3.3.0",
+    "twilio": "^4.7.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.20"

@@ -1,7 +1,7 @@
 /*
-
-This is a schema I found for use in MongoDB. We are not utilizing it here, but it is available as a potential reference. 
-
+*
+* This is a schema I found for use in MongoDB. We are not utilizing it here, but it is available as a potential reference. 
+*
 */
 
 // var userSchema = {  

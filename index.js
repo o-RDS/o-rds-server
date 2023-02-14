@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require('cors');
-const { response } = require("express");
+// const { response } = require("express");
 const tremendousRoutes = require("./routes/Tremendous.routes"),
     twilioRoutes = require("./routes/Twilio.routes"),
     userRoutes = require("./routes/user");
@@ -16,12 +16,19 @@ app.use(tremendousRoutes);
 app.use(twilioRoutes);
 app.use(userRoutes);
 
-// default route
+// default if error
+app.use((err, req, res, next) => {
+    console.log(req.body); 
+    console.log(err);
+});
+
+// default if no error, but no endpoint
 app.use((req, res) => {
-    response.send("Error: not allowed.");
+    console.log(req.body);
+    res.send("Error: not allowed.");
 });
 
 //Start the server
 app.listen(process.env.PORT || 8080, () => {
-    console.log(`Server is listening on port 8080.`);
+    console.log(`Server is listeining on port ${process.env.PORT}.`);
 });

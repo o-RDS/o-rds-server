@@ -22,11 +22,10 @@ exports.signup = (req, res) => {
         console.log("New user registered");
     });
     
-
 };
 
 exports.signin = (req, res) => {
-    fs.readFile(`./users.data/${req.body.email}.json`, (err, data) => {
+    fs.readFile(`./admin.data/${req.body.email}.json`, (err, data) => {
         if (err) {
             console.log(err);
             res.status(500).send(err);
@@ -81,5 +80,5 @@ exports.signin = (req, res) => {
 };
 
 function saveUserToFolder(user, callback) {
-    fs.writeFile(`./users.data/${user.email}.json`, JSON.stringify(user), callback);
+    fs.writeFile(`./admin.data/${user.email}.json`, JSON.stringify(user), callback);
 }

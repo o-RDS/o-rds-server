@@ -1,3 +1,9 @@
 .env
-users.data/
+
+admin.data/
+admin.data/*
+
+survey.data/
+suvery.data/*
+
 /node_modules
