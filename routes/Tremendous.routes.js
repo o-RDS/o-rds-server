@@ -1,16 +1,25 @@
-// const httpProxy = require('http-proxy'); 
 var express = require("express"),
     router = express.Router();
-verifySurveyToken = require("../middlewares/authJWT");
+verifySurveyToken = require("../middlewares/survey.JWT.auth");
+verifyAdminToken = require("../middlewares/admin.JWT.auth");
 const fetch = (...args) =>
 	import('node-fetch').then(({default: fetch}) => fetch(...args));
 
 require("dotenv").config();
 
 
-router.get('/tremendous/listCampaigns', (req, res) => {
+router.get('/tremendous/listCampaigns', verifyAdminToken, (req, res) => {
 
-    // TODO: verify JWT
+    // if JWT is invalid: req.body.user == undefined
+    if (req.body.user == undefined) {
+        console.log("Invalid JWT token");
+        res.status(403)
+        .send({
+            message: "Invalid JWT token"
+        });
+        return;
+    }
+
 
     console.log("forwarding to tremendous.com/api/v2/campaigns");
 
@@ -36,9 +45,17 @@ router.get('/tremendous/listCampaigns', (req, res) => {
 });
 
 
-router.get('/tremendous/listFundingSources', (req, res) => {
+router.get('/tremendous/listFundingSources', verifyAdminToken, (req, res) => {
 
-    // TODO: verify JWT
+    // if JWT is invalid: req.body.user == undefined
+    if (req.body.user == undefined) {
+        console.log("Invalid JWT token");
+        res.status(403)
+        .send({
+            message: "Invalid JWT token"
+        });
+        return;
+    }
 
     console.log("forwarding to tremendous.com/api/v2/funding_sources");
 
@@ -64,9 +81,17 @@ router.get('/tremendous/listFundingSources', (req, res) => {
 });
 
 
-router.post('/tremendous/sendPayment', (req, res) => {
+router.post('/tremendous/sendPayment', verifySurveyToken, (req, res) => {
 
-    // TODO: verify JWT
+    // if JWT is invalid: req.body.surveyTaker == undefined
+    if (req.body.surveyTaker == undefined) {
+        console.log("Invalid JWT token");
+        res.status(403)
+        .send({
+            message: "Invalid JWT token"
+        });
+        return;
+    }
 
     console.log("forwarding to tremendous.com/api/v2/orders");
 
@@ -85,7 +110,7 @@ router.post('/tremendous/sendPayment', (req, res) => {
                 campaign_id: req.body.campaign_id, 
                 products: req.body.products,
                 value: {denomination: req.body.denomination, currency_code: 'USD'},
-                recipient: {name: req.body.recipient.name, email: req.body.recipient.email, phone:  req.body.recipient.phone},
+                recipient: {name: req.body.recipient.name, email: req.body.recipient.email},
                 delivery: {method: req.body.method}
             }
             ]

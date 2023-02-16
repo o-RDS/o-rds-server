@@ -1,5 +1,5 @@
 var express = require("express"),
-verifyAdminToken = require("../middlewares/authJWT");
+verifyAdminToken = require("../middlewares/admin.JWT.auth");
 router = express.Router(),
 {
   signup,

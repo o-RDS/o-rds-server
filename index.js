@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require('cors');
-// const { response } = require("express");
 const tremendousRoutes = require("./routes/Tremendous.routes"),
     twilioRoutes = require("./routes/Twilio.routes"),
     userRoutes = require("./routes/user");
@@ -24,8 +23,11 @@ app.use((err, req, res, next) => {
 
 // default if no error, but no endpoint
 app.use((req, res) => {
-    console.log(req.body);
-    res.send("Error: not allowed.");
+    console.log(req.url);
+    res.status(400).send({
+        message: "Error: not allowed.",
+        method: req.method
+    });
 });
 
 //Start the server
