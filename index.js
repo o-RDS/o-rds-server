@@ -30,5 +30,5 @@ app.use((req, res) => {
 
 //Start the server
 app.listen(process.env.PORT || 8080, () => {
-    console.log(`Server is listeining on port ${process.env.PORT}.`);
+    console.log(`Server is listening on port ${process.env.PORT}.`);
 });
