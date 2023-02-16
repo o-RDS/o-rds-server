@@ -8,66 +8,107 @@ const fetch = (...args) =>
 require("dotenv").config();
 
 
-//Use this options for creating a reverse proxy to other domains.
-// const options = {
-//     changeOrigin: true,
-//     target: {
-//         https: true
-//     }
-// }
-// //Create a reverse proxy server
-// const apiProxy = httpProxy.createProxyServer(options);
+router.get('/tremendous/listCampaigns', (req, res) => {
+
+    // TODO: verify JWT
+
+    console.log("forwarding to tremendous.com/api/v2/campaigns");
+
+    const options = {
+        method: 'GET',
+        headers: {
+            accept: 'application/json',
+            'content-type': 'application/json',
+            Authorization: "Bearer " + process.env.TREMENDOUS_BEARER_TOKEN
+        }
+      };
+
+      fetch('https://testflight.tremendous.com/api/v2/campaigns', options)
+      .then(response => response.json())
+      .then(response => {
+          res.status(200).send(response);
+      })
+      .catch(err => {
+          console.log(err);
+          res.status(500).send(err);
+      });
+
+});
 
 
-// router.get('/api/v2/campaigns', (req, res) => {
-//     console.log(`redirecting to Tremendous ${req.url}`);
+router.get('/tremendous/listFundingSources', (req, res) => {
 
-//     // verify JWT
-//     // add on Tremendous Auth
-//     req.headers.authorization = "Bearer " + process.env.TREMENDOUS_BEARER_TOKEN;
+    // TODO: verify JWT
 
-//     apiProxy.web(req, res, {target:  process.env.TREMENDOUS_SERVER});
-// });
+    console.log("forwarding to tremendous.com/api/v2/funding_sources");
 
-// router.get('/api/v2/funding_sources', (req, res) => {
-//     console.log(`redirecting to Tremendous ${req.url}`);
+    const options = {
+        method: 'GET',
+        headers: {
+            accept: 'application/json',
+            'content-type': 'application/json',
+            Authorization: "Bearer " + process.env.TREMENDOUS_BEARER_TOKEN
+        }
+    };
 
-//     // verify JWT
-//     // add on Tremendous Auth
-//     req.headers.authorization = "Bearer " + process.env.TREMENDOUS_BEARER_TOKEN;
+    fetch('https://testflight.tremendous.com/api/v2/funding_sources', options)
+    .then(response => response.json())
+    .then(response => {
+        res.status(200).send(response);
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).send(err);
+    });
 
-//     apiProxy.web(req, res, {target:  process.env.TREMENDOUS_SERVER});
-// });
+});
 
-// router.post('/api/v2/orders', (req, res) => {
-//     console.log(`redirecting to Tremendous ${req.url}`);
-
-//     // coming from survey
-//     // add on Tremendous Auth
-//     req.headers.authorization = "Bearer " + process.env.TREMENDOUS_BEARER_TOKEN;
-
-//     apiProxy.web(req, res, {target:  process.env.TREMENDOUS_SERVER}); 
-// });
-
-// const sdk = require('api')('@tremendous/v2#kny22dldusg22a');
 
 router.post('/tremendous/sendPayment', (req, res) => {
+
+    // TODO: verify JWT
+
+    console.log("forwarding to tremendous.com/api/v2/orders");
+
     const options = {
         method: 'POST',
         headers: {
             accept: 'application/json',
+            'content-type': 'application/json',
             Authorization: "Bearer " + process.env.TREMENDOUS_BEARER_TOKEN
         },
-        body: req.body
+        body: JSON.stringify({
+            external_id: req.body.external_id, 
+            payment: {funding_source_id: req.body.funding_source_id, channel: 'UI'},
+            rewards: [
+            {
+                campaign_id: req.body.campaign_id, 
+                products: req.body.products,
+                value: {denomination: req.body.denomination, currency_code: 'USD'},
+                recipient: {name: req.body.recipient.name, email: req.body.recipient.email, phone:  req.body.recipient.phone},
+                delivery: {method: req.body.method}
+            }
+            ]
+        })
       };
 
-      console.log(req.body);
-      
-      // TODO: JSON object contained in request body is invalid. payload: { payment: [Array] }
       fetch('https://testflight.tremendous.com/api/v2/orders', options)
         .then(response => response.json())
-        .then(response => console.log(response))
-        .catch(err => console.error(err));
+        .then(response => {
+            res.status(200).send({
+                status: response.order.status,
+                created_at: response.order.created_at,
+                payment: {
+                    subtotal: response.order.payment.subtotal,
+                    total: response.order.payment.total,
+                    fees: response.order.payment.fees
+                }
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).send(err);
+        });
 });
 
 module.exports = router;

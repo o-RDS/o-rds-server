@@ -20,10 +20,13 @@ exports.verification = (req, res) => {
     console.log(code);
     const message = `Hello, your o-RDS verification code is: ${code}`;
 
+
+    var date = new Date();
     // create user 
     var surveyTaker = {
         hash: hash, 
-        code: bcrypt.hashSync(code.toString(), 8)
+        code: bcrypt.hashSync(code.toString(), 8),
+        timeCreated: date
     };
 
     // send them their code
@@ -34,14 +37,14 @@ exports.verification = (req, res) => {
                 saveUserToFolder(surveyTaker, function(err) {
                     if (err) {
                         console.log(err);
-                        res.status(404).send('User not saved.');
+                        res.status(404).send({ message: "User not saved."} );
                         return;
                     }
-                    res.status(200).send('Survey taker registered successfully. Verification code has been sent.');
+                    res.status(200).send({ message: "Survey taker registered successfully. Verification code has been sent." });
                     console.log("New survey taker registered");
                 })
             } else { // Twilio error
-                res.status(500).send(message.error_message);
+                res.status(500).send({ message: message.error_message} );
             }
         });
 

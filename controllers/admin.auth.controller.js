@@ -15,11 +15,11 @@ exports.signup = (req, res) => {
     saveUserToFolder(user, function(err) {
         if (err) {
             console.log(err);
-            res.status(404).send('User not saved.');
+            res.status(404).send({ message: "User not saved." });
             return;
         }
-        res.status(200).send('User registered successfully.');
-        console.log("New user registered");
+        res.status(200).send({ message: "User registered successfully." });
+        console.log("New user registered" );
     });
     
 };
