@@ -1,5 +1,4 @@
-.env.development
-
+.env
 
 admin.data/*.json
 survey.data/*.json

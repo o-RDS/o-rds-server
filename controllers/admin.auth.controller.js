@@ -2,7 +2,7 @@ var jwt = require("jsonwebtoken");
 var bcrypt = require("bcrypt");
 var fs = require('fs');
 
-exports.signup = (req, res) => {
+exports.register = (req, res) => {
 
     var user = {
         fullname: req.body.fullname,
@@ -24,7 +24,7 @@ exports.signup = (req, res) => {
     
 };
 
-exports.signin = (req, res) => {
+exports.login = (req, res) => {
     fs.readFile(`./admin.data/${req.body.email}.json`, (err, data) => {
         if (err) {
             console.log(err);

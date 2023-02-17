@@ -1,6 +1,6 @@
 # o-RDS Proxy Server
 
-This is the proxy server for the [o-RDS web app client](https://github.com/o-RDS/o-rds-web-app). This server is meant to provide integrity and confidentiality to both our users and our own API secrets. o-RDS requires the use of two services: Twilio and Tremendous, as well as a database and hosting service of choice. 
+This is the proxy server for the [o-RDS web app client](https://github.com/o-RDS/o-rds-web-app). This server is meant to provide integrity and confidentiality to both our our users' data and API secrets. o-RDS requires the use of two services: Twilio and Tremendous, as well as a database and hosting service of choice. 
 
 
 We've set up this server to handle all of its data locally. Admin accounts from the web client are saved in the folder admin.data, and survey taker information is saved in the folder survey.data. The reason this data is being saved locally, as opposed to being saved to a database, is because we do not want to enforce a storage service upon anyone who wants to use o-RDS for their own research purposes. 
