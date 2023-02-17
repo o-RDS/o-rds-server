@@ -1,4 +1,5 @@
 .env
+.firebase.js
 
 admin.data/
 admin.data/*
