@@ -22,16 +22,16 @@ signInAnonymously(auth);
 var express = require("express"),
   verifyAdminToken = require("../middlewares/admin.JWT.auth");
 router = express.Router(),
-  {
-    signup,
-    signin
-  } = require("../controllers/admin.auth.controller");
+{
+  register,
+  login
+} = require("../controllers/admin.auth.controller");
 
-router.post("/register", signup, function (req, res) {
+router.post("/register", register, function (req, res) {
 
 });
 
-router.post('/login', signin, function (req, res) {
+router.post('/login', login, function(req, res) {
 
 });
 

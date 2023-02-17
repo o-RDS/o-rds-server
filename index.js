@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require('cors');
 const tremendousRoutes = require("./routes/Tremendous.routes"),
     twilioRoutes = require("./routes/Twilio.routes"),
-    userRoutes = require("./routes/user");
+    userRoutes = require("./routes/user.routes");
 require("dotenv").config();
 
 const app = express()

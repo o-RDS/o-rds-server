@@ -90,8 +90,8 @@ exports.verificationCheck = (req, res) => {
         var token = jwt.sign({
             hash: surveyTaker.hash
         }, process.env.JWT_API_SECRET, {
-            // in seconds (24 hours)
-            expiresIn: 86400
+            // in seconds (2 hours)
+            expiresIn: 7200
         });
 
         res.status(200)
