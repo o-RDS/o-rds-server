@@ -31,7 +31,7 @@ router.get("/hiddencontent", verifyAdminToken, function (req, res) {
   } else {
     res.status(403)
       .send({
-        message: "Unauthorised access"
+        message: "Unauthorized access"
       });
   }
 });
