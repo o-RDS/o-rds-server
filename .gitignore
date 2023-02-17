@@ -1,9 +1,7 @@
-.env
+.env.development
 
-admin.data/
-admin.data/*
 
-survey.data/
-suvery.data/*
+admin.data/*.json
+survey.data/*.json
 
 /node_modules
