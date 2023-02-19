@@ -10,12 +10,13 @@ const verifyAdminToken = (req, res, next) => {
                 req.body.user = undefined;
                 next();
             }
+
             // if valid, add user data onto req.body
-            fs.readFile(`./admin.data/${req.body.email}.json`, (err, data) => {
+            fs.readFile(`./admin.data/${decode.email}.json`, (err, data) => {
                 if (err) {
                     console.log(err);
                     res.status(404).send({
-                        message: "User not found. Body must contain email and password."
+                        message: "User not found."
                     });
                 } else {
                     var user = JSON.parse(data);
