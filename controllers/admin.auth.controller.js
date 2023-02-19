@@ -11,6 +11,12 @@ exports.register = (req, res) => {
         password:  bcrypt.hashSync(req.body.password, 8)
     };
 
+    fs.readFile(`./admin.data/${user.email}.json`, (err, data) => {
+        if (data != undefined) {
+            res.status(409).send({ message: "User already exists." })
+            return;
+        }
+    })
 
     saveUserToFolder(user, function(err) {
         if (err) {
