@@ -1,5 +1,5 @@
-import { initializeApp } from "firebase/app";
-import {
+const { initializeApp } = require("firebase/app");
+const {
   getFirestore,
   doc,
   getDoc,
@@ -8,13 +8,13 @@ import {
   deleteDoc,
   query,
   collection,
-} from "firebase/firestore";
-import { getAuth, signInAnonymously } from "firebase/auth";
-import { v4 as uuidv4 } from "uuid";
+} = require("firebase/firestore");
+const { getAuth, signInAnonymously } = require("firebase/auth");
+const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
 
 // Initialize Firebase
-export const firebaseConfig = {
+const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: process.env.FIREBASE_AUTH_DOMAIN,
   projectId: process.env.FIREBASE_PROJECT_ID,
