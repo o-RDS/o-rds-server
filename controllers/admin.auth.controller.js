@@ -42,7 +42,7 @@ exports.login = (req, res) => {
         if (!user) {
             console.log("User not found");
             return res.status(404).send({
-                message: "User not found."
+                message: "Email and password combination invalid."
             });
         }
 
@@ -54,11 +54,9 @@ exports.login = (req, res) => {
         // checking if password was valid and send response accordingly
         if (!passwordValid) {
             console.log("Invalid password");
-            return res.status(401)
-                .send({
-                    accessToken: null,
-                    message: "Invalid Password!"
-                });
+            return res.status(404).send({
+                message: "Email and password combination invalid."
+            });
         }
 
         //signing token with user id
