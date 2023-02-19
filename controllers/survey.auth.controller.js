@@ -37,7 +37,7 @@ exports.verification = (req, res) => {
                 saveUserToFolder(surveyTaker, function(err) {
                     if (err) {
                         console.log(err);
-                        res.status(404).send({ message: "User not saved."} );
+                        res.status(404).send({ message: "Survey taker not saved."} );
                         return;
                     }
                     res.status(200).send({ message: "Survey taker registered successfully. Verification code has been sent." });
