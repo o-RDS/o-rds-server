@@ -22,7 +22,7 @@ exports.verification = (req, res) => {
 
 
     var date = new Date();
-    // create user 
+    // create survey taker 
     var surveyTaker = {
         hash: hash, 
         code: bcrypt.hashSync(code.toString(), 8),

@@ -33,29 +33,33 @@ Once you're ready to switch to production and utilize both of these services wit
 
 Proxy endpoint for the [Tremendous API](https://developers.tremendous.com/reference/core-campaigns-index). Takes in the user information from the web client and a valid JWT authorization header to verify the request. 
 
-Body:
+Authorization header:
 
-    {
-        "email": "newuser@siue.edu",
-        "password": "mypassword"
-    }
+```
+JWT {{"token"}}
+```
 
 ### GET: /tremendous/listFundingSources
 
 Proxy endpoint for the [Tremendous API](https://developers.tremendous.com/reference/core-funding-source-index). Takes in the user information from the web client and a valid JWT authorization header to verify the request. 
 
-Body:
+Authorization header:
 
-    {
-        "email": "newuser@siue.edu",
-        "password": "mypassword"
-    }
+```
+JWT {{"token"}}
+```
 
 ### POST: /tremendous/sendPayment
 
 Proxy endpoint for the [Tremendous API](https://developers.tremendous.com/reference/core-orders-create). This time coming from the survey. The request body is all the necessary information required to create a new order (payment) for a survey taker. This endpoint also requires a valid JWT authorization header to verify the request. 
 
-Body: 
+Authorization header:
+
+```
+JWT {{"token"}}
+```
+
+Request body: 
 
     {
         "external_id": "",
@@ -64,8 +68,7 @@ Body:
         "products": [""],
         "denomination": 5.00,
         "recipient": {"name": "new user", "email": "newuser@siue.edu"},
-        "method": "EMAIL",
-        "to": "+1..."
+        "method": "EMAIL"
     }
 
 Notes: (1) "external_id" must be unique per new order, or else the Tremendous API will treat it as if you are requesting information on a previous order. (2) "denomination" must be a positive non-zero number. (3) "to" is the survey taker's phone number in the international (+1) format. 
@@ -122,7 +125,8 @@ Body:
 
 ### GET: /hiddencontent
 
-This is an example endpoint to show how content can be hidden based on the requesting user's authorization level. This endpoint will block a user from the "hidden content" if their account "role" is not "admin". This endpoint requires that the JWT token be in the `Authorization` header in the form with the actual token replacing the word `token`.
+This is an example endpoint to show how content can be hidden based on the requesting user's authorization level. This endpoint will block a user from the "hidden content" if their account "role" is not "admin". This endpoint requires that the JWT token be in the `Authorization` header in the form with the actual token replacing {{"token"}}.
+
 ```
 JWT {{"token"}}
 ```
