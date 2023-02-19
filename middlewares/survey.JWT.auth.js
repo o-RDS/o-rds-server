@@ -9,6 +9,7 @@ const verifySurveyToken  = (req, res, next) => {
         if (err) {
             console.log(err);
             req.body.surveyTaker = undefined;
+            next();
         }
 
         // convert phone number in req to hash to locate file
