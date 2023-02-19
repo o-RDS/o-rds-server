@@ -27,6 +27,8 @@ Once you're ready to switch to production and utilize both of these services wit
 
 # [Endpoints](./routes)
 
+## Tremendous
+
 ### GET: /tremendous/listCampaigns
 
 Proxy endpoint for the [Tremendous API](https://developers.tremendous.com/reference/core-campaigns-index). Takes in the user information from the web client and a valid JWT authorization header to verify the request. 
@@ -67,6 +69,8 @@ Body:
     }
 
 Notes: (1) "external_id" must be unique per new order, or else the Tremendous API will treat it as if you are requesting information on a previous order. (2) "denomination" must be a positive non-zero number. (3) "to" is the survey taker's phone number in the international (+1) format. 
+
+## Twilio
 
 ### POST: /twilio/verification
 
