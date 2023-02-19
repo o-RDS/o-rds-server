@@ -97,6 +97,8 @@ Body:
         "code": "123456"
     }
 
+## Web Client Authorization
+
 ### POST: /register
 
 Allows users of the [admin client](https://github.com/o-RDS/o-rds-web-app) to register new accounts. This endpoint takes a user JSON object in the request body. 
