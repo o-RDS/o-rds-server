@@ -23,7 +23,7 @@ exports.register = (req, res) => {
                     res.status(404).send({ message: "User not saved." });
                     return;
                 }
-                res.status(200).send({ message: "User registered successfully." });
+                res.status(201).send({ message: "User registered successfully." });
                 console.log("New user registered");
             });
         }
