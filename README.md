@@ -118,11 +118,7 @@ Body:
 
 ### GET: /hiddencontent
 
-This is an example endpoint to show how content can be hidden based on the requesting user's authorization level. This endpoint will block a user from the "hidden content" if their account "role" is not "admin". This endpoint takes an email and password in the request body to check the user file. 
-
-Body:
-
-    {
-        "email": "newuser@siue.edu",
-        "password": "mypassword"
-    }
+This is an example endpoint to show how content can be hidden based on the requesting user's authorization level. This endpoint will block a user from the "hidden content" if their account "role" is not "admin". This endpoint requires that the JWT token be in the `Authorization` header in the form with the actual token replacing the word `token`.
+```
+JWT {{"token"}}
+```
