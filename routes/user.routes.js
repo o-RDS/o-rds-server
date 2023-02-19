@@ -77,7 +77,7 @@ router.get("/api/admin/surveys", verifyAdminToken, async function (req, res) {
   else if (req.body.user.role == "admin") {
     try {
       const db = getFirestore();
-      const userRef = doc(db, "users", req.body.userID);
+      const userRef = doc(db, "users", req.body.user.email);
       let docSnap = await getDoc(userRef);
       if (docSnap.exists()) {
         var surveyList = []
