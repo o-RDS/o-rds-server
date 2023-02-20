@@ -24,27 +24,27 @@ exports.verification = (req, res) => {
     var date = new Date();
     // create survey taker 
     var surveyTaker = {
-        hash: hash, 
+        hash: hash,
         code: bcrypt.hashSync(code.toString(), 8),
         timeCreated: date
     };
 
     // send them their code
     client.messages
-        .create({body: message, from: process.env.TWILIO_PHONE_NUMBER, to: to})
+        .create({ body: message, from: process.env.TWILIO_PHONE_NUMBER, to: to })
         .then(message => {
             if (message.error_code == null) { // message sent successfully
-                saveUserToFolder(surveyTaker, function(err) {
+                saveUserToFolder(surveyTaker, function (err) {
                     if (err) {
                         console.log(err);
-                        res.status(404).send({ message: "Survey taker not saved."} );
+                        res.status(404).send({ message: "Survey taker not saved." });
                         return;
                     }
                     res.status(200).send({ message: "Survey taker registered successfully. Verification code has been sent." });
                     console.log("New survey taker registered");
                 })
             } else { // Twilio error
-                res.status(500).send({ message: message.error_message} );
+                res.status(500).send({ message: message.error_message });
             }
         });
 
@@ -80,10 +80,10 @@ exports.verificationCheck = (req, res) => {
         if (!codeValid) {
             console.log("Invalid code");
             return res.status(401)
-            .send({
-                accessToken: null,
-                message: "Invalid code!"
-            });
+                .send({
+                    accessToken: null,
+                    message: "Invalid code!"
+                });
         }
 
         //signing token with phone hash
@@ -95,13 +95,13 @@ exports.verificationCheck = (req, res) => {
         });
 
         res.status(200)
-        .send({
-            message: "Survey taker verification successful",
-            accessToken: token
-        });
+            .send({
+                message: "Survey taker verification successful",
+                accessToken: token
+            });
         console.log("Survey taker verification successful");
 
-        });
+    });
 
 };
 
