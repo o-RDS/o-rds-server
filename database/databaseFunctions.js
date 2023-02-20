@@ -34,24 +34,28 @@ async function getSurveyConfigs(userID, index = 0, limit = index+5) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
   let docSnap = await getDoc(userRef);
-  if (docSnap.exists()) {
-    var surveyList = []
-    let surveyIDs = docSnap.data().surveys
-    for (var i = index; i < limit; i++) {
-      if (i >= surveyIDs.length) {
-        break;
-      }
-      let surveyID = surveyIDs[i];
-      const surveyRef = doc(db, "surveys", surveyID);
-      let surveySnap = await getDoc(surveyRef);
-      if (surveySnap.exists()) {
-        surveyList.push(surveySnap.data());
-      }
-    };
-    return surveyList;
-  } else {
-    console.log("User does not exist");
-    return false;
+  try {
+    if (docSnap.exists()) {
+      var surveyList = []
+      let surveyIDs = docSnap.data().surveys
+      for (var i = index; i < limit; i++) {
+        if (i >= surveyIDs.length) {
+          break;
+        }
+        let surveyID = surveyIDs[i];
+        const surveyRef = doc(db, "surveys", surveyID);
+        let surveySnap = await getDoc(surveyRef);
+        if (surveySnap.exists()) {
+          surveyList.push(surveySnap.data());
+        }
+      };
+      return surveyList;
+    } else {
+      console.log("User does not exist");
+      return 404;
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
 
@@ -63,7 +67,8 @@ async function getSurveyConfig(id) {
     if (docSnap.exists()) {
       return docSnap.data();
     } else {
-      console.log("Document does not exist");
+      console.log("Survey does not exist");
+      return 404;
     }
   } catch (error) {
     console.log(error);
@@ -85,17 +90,18 @@ async function postSurveyConfig(
         console.log("User is admin, updating survey");
         surveyData.lastUpdated = new Date().toLocaleString("en-US", { timeZone: "CST" });
         setDoc(docRef, surveyData);
+        return 201;
       } else {
         console.log("Unauthorized access to survey");
-        return false;
+        return 403;
       }
     } else {
-      addSurveyToUser(userID, surveyID);
+      patchSurveyToUser(userID, surveyID);
       setDoc(docRef, surveyData);
+      return 201;
     }
   } catch (error) {
     console.log(error);
-    return false;
   }
 }
 
@@ -109,21 +115,20 @@ async function deleteSurveyConfig(userID, surveyID) {
         console.log("User is admin, deleting survey");
         for (let admin of docSnap.data().admins) {
           console.log("Removing survey from admin: ", admin)
-          await removeSurveyFromUser(admin, surveyID);
+          await deleteSurveyFromUser(admin, surveyID);
         }
         deleteDoc(docRef);
-        return true;
+        return 200;
       } else {
         console.log("Unauthorized access to survey");
-        return false;
+        return 403;
       }
     } else {
       console.log("Document does not exist");
-      return false;
+      return 404;
     }
   } catch (error) {
     console.log(error);
-    return false;
   }
 }
 

@@ -1,7 +1,7 @@
-const { 
-  getSurveyConfig, 
-  getSurveyConfigs, 
-  postSurveyConfig, 
+const {
+  getSurveyConfig,
+  getSurveyConfigs,
+  postSurveyConfig,
   deleteSurveyConfig,
   getResponse,
   getResponses,
@@ -22,6 +22,8 @@ router = express.Router(),
     login
   } = require("../controllers/admin.auth.controller");
 
+
+
 router.post("/register", register, function (req, res) {
 
 });
@@ -32,7 +34,7 @@ router.post('/login', login, function (req, res) {
 
 // just an example
 router.get("/hiddencontent", verifyAdminToken, function (req, res) {
-  console.log(req.body);
+  //console.log(req.body);
   if (req.body.user == undefined) {
     res.status(403)
       .send({
@@ -54,6 +56,42 @@ router.get("/hiddencontent", verifyAdminToken, function (req, res) {
 
 // SURVEY ROUTES
 
+router.get("/api/survey", verifyAdminToken, async function (req, res) {
+  //console.log(req.body);
+  if (req.body.user == undefined) {
+    res.status(401)
+      .send({
+        message: "Invalid JWT token"
+      });
+  }
+  else if (req.body.surveyID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID"
+      });
+  }
+  else {
+    let result = await getSurveyConfig(req.body.surveyID);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "Survey does not exist"
+        });
+    } else {
+      res.status(200)
+        .send(
+          result
+        );
+    }
+  }
+});
+
 router.get("/api/surveys", verifyAdminToken, async function (req, res) {
   console.log(req.body);
   if (req.body.user == undefined) {
@@ -63,115 +101,137 @@ router.get("/api/surveys", verifyAdminToken, async function (req, res) {
       });
   }
   else if (req.body.user.role == "admin") {
-    try {
-      const db = getFirestore();
-      const userRef = doc(db, "users", req.body.user.email);
-      let docSnap = await getDoc(userRef);
-      if (docSnap.exists()) {
-        var surveyList = []
-        let surveyIDs = docSnap.data().surveys
-        for (var i = req.body.index; i < req.body.limit; i++) {
-          if (i >= surveyIDs.length) {
-            break;
-          }
-          let surveyID = surveyIDs[i];
-          const surveyRef = doc(db, "surveys", surveyID);
-          let surveySnap = await getDoc(surveyRef);
-          if (surveySnap.exists()) {
-            surveyList.push(surveySnap.data());
-          }
-        };
-        res.status(200)
-          .send(
-            surveyList
-          );
-      } else {
-        res.status(400)
-          .send({
-            message: "User does not exist"
-          });
-      }
-    } catch (error) {
-      res.status(400)
+    if (req.body.index == undefined) {
+      req.body.index = 0;
+    }
+    if (req.body.limit == undefined) {
+      req.body.limit = req.body.index + 5;
+    }
+    let result = await getSurveyConfigs(req.body.user.email, req.body.index, req.body.limit);
+    if (result == undefined) {
+      res.status(500)
         .send({
-          message: "Bad Request"
+          message: "Internal Server Error"
         });
     }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "User does not exist"
+        });
+    } else {
+      res.status(200)
+        .send(
+          result
+        );
+    }
   } else {
-    res.status(401)
+    res.status(403)
       .send({
         message: "Unauthorized access"
       });
   }
 });
 
-router.get("/api/survey", verifyAdminToken, async function (req, res) {
-  console.log(req.body);
+
+router.post("/api/survey", verifyAdminToken, async function (req, res) {
+  //console.log(req.body);
   if (req.body.user == undefined) {
     res.status(401)
       .send({
         message: "Invalid JWT token"
       });
   }
-  const db = getFirestore();
-  const docRef = doc(db, "surveys", req.body.surveyID);
-  try {
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      res.status(200)
-        .send(
-          docSnap.data()
-        );
-    } else {
-      console.log("Survey does not exist");
-      res.status(404)
+  else if (req.body.user.role == "admin") {
+    if (req.body.surveyID == undefined || req.body.surveyData == undefined) {
+      res.status(400)
         .send({
-          message: "Survey does not exist"
+          message: "Invalid request, missing surveyID or data"
         });
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500)
+    else {
+      let result = await postSurveyConfig(req.body.user.email, req.body.surveyID, req.body.surveyData);
+      if (result == undefined) {
+        res.status(500)
+          .send({
+            message: "Internal Server Error"
+          });
+      }
+      else if (result == 403) {
+        res.status(403)
+          .send({
+            message: "Unauthorized access, not your survey"
+          });
+      }
+      else {
+        res.status(201)
+          .send({
+            message: "Survey created or overwritten"
+          });
+      }
+    }
+  } else {
+    res.status(403)
       .send({
-        message: "Error getting document"
+        message: "Unauthorized access, not an admin"
       });
   }
 });
-/*
-router.get("/api/survey", verifyAdminToken, async function (req, res) {
-  console.log(req.body);
+
+router.delete("/api/survey", verifyAdminToken, async function (req, res) {
+  //console.log(req.body);
   if (req.body.user == undefined) {
     res.status(401)
       .send({
         message: "Invalid JWT token"
       });
   }
-  try {
-    const db = getFirestore();
-    const docRef = doc(db, "surveys", req.body.surveyID);
-    let docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      if (docSnap.data().admins.includes(req.body.user.email)) {
-        console.log("User is admin, updating survey");
-        req.body.surveyData.lastUpdated = new Date().toLocaleString("en-US", { timeZone: "CST" });
-        setDoc(docRef, req.body.surveyData);
-      } else {
-        console.log("Unauthorized access to survey");
-        return false;
-      }
-    } else {
-      addSurveyToUser(req.body.user.email, req.body.surveyID);
-      setDoc(docRef, req.body.surveyData);
+  else if (req.body.user.role == "admin") {
+    if (req.body.surveyID == undefined) {
+      res.status(400)
+        .send({
+          message: "Invalid request, missing surveyID"
+        });
     }
-  } catch (error) {
-    console.log(error);
-    res.status(500)
+    else {
+      let result = await deleteSurveyConfig(req.body.user.email, req.body.surveyID);
+      if (result == undefined) {
+        res.status(500)
+          .send({
+            message: "Internal Server Error"
+          });
+      }
+      else if (result == 403) {
+        res.status(403)
+          .send({
+            message: "Unauthorized access, not your survey"
+          });
+      }
+      else if (result == 404) {
+        res.status(404)
+          .send({
+            message: "Survey does not exist"
+          });
+      }
+      else {
+        res.status(200)
+          .send({
+            message: "Survey deleted"
+          });
+      }
+    }
+  } else {
+    res.status(403)
       .send({
-        message: "Error getting document"
+        message: "Unauthorized access, not an admin"
       });
   }
 });
-*/
 
+// RESPONSE ROUTES
+
+router.get("/api/response", verifyAdminToken, async function (req, res) {
+  //console.log(req.body);
+});
 
 module.exports = router;
