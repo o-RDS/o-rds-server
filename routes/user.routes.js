@@ -1,33 +1,19 @@
-const { initializeApp } = require("firebase/app");
-const {
-  getFirestore,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  deleteDoc,
-  query,
-  collection,
-} = require("firebase/firestore");
-const { getAuth, signInAnonymously } = require("firebase/auth");
-const { v4: uuidv4 } = require("uuid");
-require("dotenv").config();
-
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
-}
-initializeApp(firebaseConfig);
-
-const auth = getAuth();
-// server could have account info in .env file in future for double security
-signInAnonymously(auth);
-
+const { 
+  getSurveyConfig, 
+  getSurveyConfigs, 
+  postSurveyConfig, 
+  deleteSurveyConfig,
+  getResponse,
+  getResponses,
+  postResponse,
+  postHash,
+  getIncentiveInfo,
+  postIncentive,
+  putIncentiveInfo,
+  postAlias,
+  deleteSurveyFromUser,
+  patchSurveyToUser
+} = require('../database/databaseFunctions.js');
 var express = require("express"),
   verifyAdminToken = require("../middlewares/admin.JWT.auth");
 router = express.Router(),
