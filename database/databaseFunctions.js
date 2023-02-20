@@ -30,7 +30,7 @@ signInAnonymously(auth);
 
 // SURVEY FUNCTIONS
 
-async function getSurveyConfigs(userID, index = 0, limit = index+5) {
+async function getSurveyConfigs(userID, index = 0, limit = index + 5) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
   let docSnap = await getDoc(userRef);
@@ -111,7 +111,7 @@ async function deleteSurveyConfig(userID, surveyID) {
   try {
     let docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      if (docSnap.data().admins.includes(userID)) { 
+      if (docSnap.data().admins.includes(userID)) {
         console.log("User is admin, deleting survey");
         for (let admin of docSnap.data().admins) {
           console.log("Removing survey from admin: ", admin)
@@ -137,35 +137,54 @@ async function deleteSurveyConfig(userID, surveyID) {
 async function getResponse(surveyID, alias) {
   const db = getFirestore();
   const aliasRef = doc(db, "responses", surveyID, "aliases", alias);
-  let docSnap = await getDoc(aliasRef);
-  if (docSnap.exists()) {
-    let responseID = docSnap.data().responseID;
-    const responseRef = doc(
-      db,
-      "responses",
-      surveyID,
-      "surveyResults",
-      responseID
-    );
-    let responseSnap = await getDoc(responseRef);
-    if (responseSnap.exists()) {
-      return responseSnap.data();
-    } else {
-      console.log("Response does not exist");
-      return false;
+  try {
+    let docSnap = await getDoc(aliasRef);
+    if (docSnap.exists()) {
+      let responseID = docSnap.data().responseID;
+      const responseRef = doc(
+        db,
+        "responses",
+        surveyID,
+        "surveyResults",
+        responseID
+      );
+      let responseSnap = await getDoc(responseRef);
+      if (responseSnap.exists()) {
+        return responseSnap.data();
+      } else {
+        console.log("Response does not exist");
+        return 404;
+      }
     }
+  } catch (error) {
+    console.log(error);
   }
 }
 
-async function getResponses(surveyID) {
+async function getResponses(userID, surveyID) {
   const db = getFirestore();
   const surveyRef = query(collection(db, "responses", surveyID, "surveyResults"));
-  let querySnapshot = await getDocs(surveyRef);
-  let allResponses = [];
-  querySnapshot.forEach((doc) => {
-    allResponses.push(doc.data());
-  });
-  return allResponses;
+  try {
+    let docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      if (docSnap.data().admins.includes(userID)) {
+        let querySnapshot = await getDocs(surveyRef);
+        let allResponses = [];
+        querySnapshot.forEach((doc) => {
+          allResponses.push(doc.data());
+        });
+        return allResponses;
+      } else {
+        console.log("Unauthorized access to survey");
+        return 403;
+      }
+    } else {
+      console.log("Survey does not exist");
+      return 404;
+    }
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 async function postResponse(
@@ -175,36 +194,28 @@ async function postResponse(
 ) {
   const db = getFirestore();
   const aliasRef = doc(db, "responses", surveyID, "aliases", alias);
-  let docSnap = await getDoc(aliasRef);
-  console.log(
-    "Writing response",
-    response,
-    "to alias",
-    alias,
-    "for survey",
-    surveyID,
-    ""
-  );
-  if (docSnap.exists()) {
-    console.log("Alias exists, writing response");
-    let responseID = docSnap.data().responseID;
-    const responseRef = doc(
-      db,
-      "responses",
-      surveyID,
-      "surveyResults",
-      responseID
-    );
-    setDoc(responseRef, response);
-    if (response.completed) {
-      console.log("Survey completed, deleting alias");
-      // delete the alias after the response is completed so it can't be updated again
-      deleteDoc(aliasRef);
+  try {
+    let docSnap = await getDoc(aliasRef);
+    if (docSnap.exists()) {
+      let responseID = docSnap.data().responseID;
+      const responseRef = doc(
+        db,
+        "responses",
+        surveyID,
+        "surveyResults",
+        responseID
+      );
+      setDoc(responseRef, response);
+      if (response.completed) {
+        deleteDoc(aliasRef);
+      }
+      return 201;
+    } else {
+      console.log("Alias or Survey does not exist");
+      return 404;
     }
-    return true;
-  } else {
-    console.log("Alias does not exist");
-    return false;
+  } catch (error) {
+    console.log(error);
   }
 }
 

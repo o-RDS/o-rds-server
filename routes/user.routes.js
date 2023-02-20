@@ -22,49 +22,30 @@ router = express.Router(),
     login
   } = require("../controllers/admin.auth.controller");
 
-
-
-router.post("/register", register, function (req, res) {
-
-});
-
-router.post('/login', login, function (req, res) {
-
-});
-
-// just an example
-router.get("/hiddencontent", verifyAdminToken, function (req, res) {
-  //console.log(req.body);
+function gotJWT(req, res, next) {
   if (req.body.user == undefined) {
     res.status(403)
       .send({
         message: "Invalid JWT token"
       });
-  }
-  else if (req.body.user.role == "admin") {
-    res.status(200)
-      .send({
-        message: "Congratulations! but there is no hidden content"
-      });
   } else {
-    res.status(403)
-      .send({
-        message: "Unauthorized access"
-      });
+    next();
   }
+}
+
+// AUTH ROUTES
+
+router.post("/register", register, function (req, res) {
+});
+
+router.post('/login', login, function (req, res) {
 });
 
 // SURVEY ROUTES
 
-router.get("/api/survey", verifyAdminToken, async function (req, res) {
+router.get("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
-  if (req.body.user == undefined) {
-    res.status(401)
-      .send({
-        message: "Invalid JWT token"
-      });
-  }
-  else if (req.body.surveyID == undefined) {
+  if (req.body.surveyID == undefined) {
     res.status(400)
       .send({
         message: "Invalid request, missing surveyID"
@@ -92,15 +73,8 @@ router.get("/api/survey", verifyAdminToken, async function (req, res) {
   }
 });
 
-router.get("/api/surveys", verifyAdminToken, async function (req, res) {
-  console.log(req.body);
-  if (req.body.user == undefined) {
-    res.status(401)
-      .send({
-        message: "Invalid JWT token"
-      });
-  }
-  else if (req.body.user.role == "admin") {
+router.get("/api/surveys", verifyAdminToken, gotJWT, async function (req, res) {
+  if (req.body.user.role == "admin") {
     if (req.body.index == undefined) {
       req.body.index = 0;
     }
@@ -133,16 +107,9 @@ router.get("/api/surveys", verifyAdminToken, async function (req, res) {
   }
 });
 
-
-router.post("/api/survey", verifyAdminToken, async function (req, res) {
+router.post("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
-  if (req.body.user == undefined) {
-    res.status(401)
-      .send({
-        message: "Invalid JWT token"
-      });
-  }
-  else if (req.body.user.role == "admin") {
+  if (req.body.user.role == "admin") {
     if (req.body.surveyID == undefined || req.body.surveyData == undefined) {
       res.status(400)
         .send({
@@ -178,15 +145,9 @@ router.post("/api/survey", verifyAdminToken, async function (req, res) {
   }
 });
 
-router.delete("/api/survey", verifyAdminToken, async function (req, res) {
+router.delete("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
-  if (req.body.user == undefined) {
-    res.status(401)
-      .send({
-        message: "Invalid JWT token"
-      });
-  }
-  else if (req.body.user.role == "admin") {
+  if (req.body.user.role == "admin") {
     if (req.body.surveyID == undefined) {
       res.status(400)
         .send({
@@ -230,8 +191,100 @@ router.delete("/api/survey", verifyAdminToken, async function (req, res) {
 
 // RESPONSE ROUTES
 
-router.get("/api/response", verifyAdminToken, async function (req, res) {
+router.get("/api/response", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
+  if (req.body.alias == undefined || req.body.surveyID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing alias or surveyID"
+      });
+  }
+  else {
+    let result = await getResponse(req.body.surveyID, req.body.alias);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "Response does not exist"
+        });
+    } else {
+      res.status(200)
+        .send(
+          result
+        );
+    }
+  }
+});
+
+router.get("/api/responses", verifyAdminToken, gotJWT, async function (req, res) {
+  //console.log(req.body);
+  if (req.body.surveyID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID"
+      });
+  }
+  else {
+    let result = await getResponses(req.body.user.email, req.body.surveyID);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 403) {
+      res.status(403)
+        .send({
+          message: "Unauthorized access, not your survey"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "Survey does not exist"
+        });
+    } else {
+      res.status(200)
+        .send(
+          result
+        );
+    }
+  }
+});
+
+router.post("/api/response", verifyAdminToken, gotJWT, async function (req, res) {
+  //console.log(req.body);
+  if (req.body.surveyID == undefined || req.body.alias == undefined || req.body.responseData == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID, alias, or responseData"
+      });
+  }
+  else {
+    let result = await postResponse(req.body.surveyID, req.body.alias, req.body.responseData);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "Survey or alias does not exist"
+        });
+    } else {
+      res.status(201)
+        .send({
+          message: "Response created or overwritten"
+        });
+    }
+  }
 });
 
 module.exports = router;
