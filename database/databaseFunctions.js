@@ -28,6 +28,45 @@ const auth = getAuth();
 // server could have account info in .env file in future for double security
 signInAnonymously(auth);
 
+// AUTH FUNCTIONS
+async function getUser(userID) {
+  const db = getFirestore();
+  const docRef = doc(db, "users", userID);
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      console.log("User does not exist");
+      return 404;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function postUser(userID, email, hash, fullName, role) {
+  const db = getFirestore();
+  const docRef = doc(db, "users", userID);
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return 409;
+    } else {
+      await setDoc(docRef, {
+        fullName: fullName,
+        email: email,
+        hash: hash,
+        role: role,
+        surveys: [],
+      });
+    return 201;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 // SURVEY FUNCTIONS
 
 async function getSurveyConfigs(userID, index = 0, limit = index + 5) {
@@ -338,7 +377,7 @@ async function postAlias(surveyID) {
   return false;
 }
 
-async function deleteSurveyFromUser(userID, surveyID) {
+async function patchSurveyFromUser(userID, surveyID) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
   try {
@@ -378,6 +417,8 @@ async function patchSurveyToUser(userID, surveyID) {
   }
 }
 
+module.exports.getUser = getUser;
+module.exports.postUser = postUser;
 module.exports.getSurveyConfig = getSurveyConfig;
 module.exports.getSurveyConfigs = getSurveyConfigs;
 module.exports.postSurveyConfig = postSurveyConfig;
@@ -390,5 +431,5 @@ module.exports.getIncentiveInfo = getIncentiveInfo;
 module.exports.postIncentive = postIncentive;
 module.exports.putIncentiveInfo = putIncentiveInfo;
 module.exports.postAlias = postAlias;
-module.exports.deleteSurveyFromUser = deleteSurveyFromUser;
+module.exports.patchSurveyFromUser = patchSurveyFromUser;
 module.exports.patchSurveyToUser = patchSurveyToUser;

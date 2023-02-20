@@ -1,6 +1,7 @@
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcrypt");
 var fs = require('fs');
+const { getUser, postUser } = require("../database/databaseFunctions.js");
 
 exports.register = (req, res) => {
 
