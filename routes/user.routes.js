@@ -11,11 +11,13 @@ const {
   postIncentive,
   putIncentiveInfo,
   postAlias,
-  deleteSurveyFromUser,
+  patchSurveyFromUser,
   patchSurveyToUser
 } = require('../database/databaseFunctions.js');
 var express = require("express"),
-  verifyAdminToken = require("../middlewares/admin.JWT.auth");
+  verifyAdminToken = require("../middlewares/admin.JWT.auth"),
+  verifySurveyToken = require('../middlewares/survey.JWT.auth.js'),
+  verifyToken = require("../middlewares/general.JWT.auth");
 router = express.Router(),
   {
     register,
@@ -43,7 +45,7 @@ router.post('/login', login, function (req, res) {
 
 // SURVEY ROUTES
 
-router.get("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
+router.get("/api/survey", verifyToken, gotJWT, async function (req, res) {
   //console.log(req.body);
   if (req.body.surveyID == undefined) {
     res.status(400)
@@ -191,7 +193,7 @@ router.delete("/api/survey", verifyAdminToken, gotJWT, async function (req, res)
 
 // RESPONSE ROUTES
 
-router.get("/api/response", verifyAdminToken, gotJWT, async function (req, res) {
+router.get("/api/response", verifySurveyToken, gotJWT, async function (req, res) {
   //console.log(req.body);
   if (req.body.alias == undefined || req.body.surveyID == undefined) {
     res.status(400)
@@ -257,7 +259,7 @@ router.get("/api/responses", verifyAdminToken, gotJWT, async function (req, res)
   }
 });
 
-router.post("/api/response", verifyAdminToken, gotJWT, async function (req, res) {
+router.post("/api/response", verifySurveyToken, gotJWT, async function (req, res) {
   //console.log(req.body);
   if (req.body.surveyID == undefined || req.body.alias == undefined || req.body.responseData == undefined) {
     res.status(400)
@@ -285,6 +287,42 @@ router.post("/api/response", verifyAdminToken, gotJWT, async function (req, res)
         });
     }
   }
+});
+
+router.delete("/api/response", verifyAdminToken, gotJWT, async function (req, res) {
+  //TODO
+});
+
+// INCENTIVE ROUTES
+
+router.post("/api/hash", verifySurveyToken, gotJWT, async function (req, res) {
+  //TODO
+});
+
+router.get("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
+  //TODO
+});
+
+router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
+  //TODO
+});
+
+router.put("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
+  //TODO
+});
+
+// OTHER ROUTES
+
+router.post("/api/alias", verifySurveyToken, gotJWT, async function (req, res) {
+  //TODO
+});
+
+router.patch("/api/user-remove", verifyAdminToken, gotJWT, async function (req, res) {
+  //TODO
+});
+
+router.patch("/api/user-add", verifyAdminToken, gotJWT, async function (req, res) {
+  //TODO
 });
 
 module.exports = router;
