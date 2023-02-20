@@ -31,16 +31,16 @@ signInAnonymously(auth);
 var express = require("express"),
   verifyAdminToken = require("../middlewares/admin.JWT.auth");
 router = express.Router(),
-{
-  register,
-  login
-} = require("../controllers/admin.auth.controller");
+  {
+    register,
+    login
+  } = require("../controllers/admin.auth.controller");
 
 router.post("/register", register, function (req, res) {
 
 });
 
-router.post('/login', login, function(req, res) {
+router.post('/login', login, function (req, res) {
 
 });
 
@@ -66,10 +66,12 @@ router.get("/hiddencontent", verifyAdminToken, function (req, res) {
   }
 });
 
-router.get("/api/admin/surveys", verifyAdminToken, async function (req, res) {
+// SURVEY ROUTES
+
+router.get("/api/surveys", verifyAdminToken, async function (req, res) {
   console.log(req.body);
   if (req.body.user == undefined) {
-    res.status(403)
+    res.status(401)
       .send({
         message: "Invalid JWT token"
       });
@@ -94,14 +96,14 @@ router.get("/api/admin/surveys", verifyAdminToken, async function (req, res) {
           }
         };
         res.status(200)
-        .send({
-          message: surveyList
-        });
+          .send(
+            surveyList
+          );
       } else {
         res.status(400)
-        .send({
-          message: "User does not exist"
-        });
+          .send({
+            message: "User does not exist"
+          });
       }
     } catch (error) {
       res.status(400)
@@ -110,11 +112,80 @@ router.get("/api/admin/surveys", verifyAdminToken, async function (req, res) {
         });
     }
   } else {
-    res.status(403)
+    res.status(401)
       .send({
         message: "Unauthorized access"
       });
   }
 });
+
+router.get("/api/survey", verifyAdminToken, async function (req, res) {
+  console.log(req.body);
+  if (req.body.user == undefined) {
+    res.status(401)
+      .send({
+        message: "Invalid JWT token"
+      });
+  }
+  const db = getFirestore();
+  const docRef = doc(db, "surveys", req.body.surveyID);
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      res.status(200)
+        .send(
+          docSnap.data()
+        );
+    } else {
+      console.log("Survey does not exist");
+      res.status(404)
+        .send({
+          message: "Survey does not exist"
+        });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500)
+      .send({
+        message: "Error getting document"
+      });
+  }
+});
+/*
+router.get("/api/survey", verifyAdminToken, async function (req, res) {
+  console.log(req.body);
+  if (req.body.user == undefined) {
+    res.status(401)
+      .send({
+        message: "Invalid JWT token"
+      });
+  }
+  try {
+    const db = getFirestore();
+    const docRef = doc(db, "surveys", req.body.surveyID);
+    let docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      if (docSnap.data().admins.includes(req.body.user.email)) {
+        console.log("User is admin, updating survey");
+        req.body.surveyData.lastUpdated = new Date().toLocaleString("en-US", { timeZone: "CST" });
+        setDoc(docRef, req.body.surveyData);
+      } else {
+        console.log("Unauthorized access to survey");
+        return false;
+      }
+    } else {
+      addSurveyToUser(req.body.user.email, req.body.surveyID);
+      setDoc(docRef, req.body.surveyData);
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500)
+      .send({
+        message: "Error getting document"
+      });
+  }
+});
+*/
+
 
 module.exports = router;
