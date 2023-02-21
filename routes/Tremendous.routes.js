@@ -8,7 +8,7 @@ const fetch = (...args) =>
 require("dotenv").config();
 
 
-router.get('/tremendous/listCampaigns', verifyAdminToken, (req, res) => {
+router.get('/api/tremendous/listCampaigns', verifyAdminToken, (req, res) => {
 
     // if JWT is invalid: req.body.user == undefined
     if (req.body.user == undefined) {
@@ -45,7 +45,7 @@ router.get('/tremendous/listCampaigns', verifyAdminToken, (req, res) => {
 });
 
 
-router.get('/tremendous/listFundingSources', verifyAdminToken, (req, res) => {
+router.get('/api/tremendous/listFundingSources', verifyAdminToken, (req, res) => {
 
     // if JWT is invalid: req.body.user == undefined
     if (req.body.user == undefined) {
@@ -81,7 +81,7 @@ router.get('/tremendous/listFundingSources', verifyAdminToken, (req, res) => {
 });
 
 
-router.post('/tremendous/sendPayment', verifySurveyToken, (req, res) => {
+router.post('/api/tremendous/sendPayment', verifySurveyToken, (req, res) => {
 
     // if JWT is invalid: req.body.surveyTaker == undefined
     if (req.body.surveyTaker == undefined) {

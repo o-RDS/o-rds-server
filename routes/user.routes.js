@@ -36,16 +36,16 @@ router = express.Router(),
   login
 } = require("../controllers/admin.auth.controller");
 
-router.post("/register", register, function (req, res) {
+router.post("/api/register", register, function (req, res) {
 
 });
 
-router.post('/login', login, function(req, res) {
+router.post('/api/login', login, function(req, res) {
 
 });
 
 // just an example
-router.get("/hiddencontent", verifyAdminToken, function (req, res) {
+router.get("/api/hiddencontent", verifyAdminToken, function (req, res) {
   console.log(req.body);
   if (req.body.user == undefined) {
     res.status(403)
