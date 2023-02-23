@@ -4,7 +4,7 @@
 *
 */
 
-// var userSchema = {  
+// var userSchema = new Schema({  
 //     fullname: {
 //         type: String,
 //     },
@@ -23,5 +23,5 @@
 //       type: String,
 //       required: true
 //     }
-// };
+// });
 

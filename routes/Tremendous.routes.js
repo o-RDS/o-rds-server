@@ -7,19 +7,18 @@ const fetch = (...args) =>
 
 require("dotenv").config();
 
-
-router.get('/api/tremendous/listCampaigns', verifyAdminToken, (req, res) => {
-
-    // if JWT is invalid: req.body.user == undefined
+function gotJWT(req, res, next) {
     if (req.body.user == undefined) {
-        console.log("Invalid JWT token");
-        res.status(403)
+      res.status(403)
         .send({
-            message: "Invalid JWT token"
+          message: "Invalid JWT token"
         });
-        return;
+    } else {
+      next();
     }
+  }
 
+router.get('/api/tremendous/listCampaigns', verifyAdminToken, gotJWT, (req, res) => {
 
     console.log("forwarding to tremendous.com/api/v2/campaigns");
 
@@ -45,17 +44,7 @@ router.get('/api/tremendous/listCampaigns', verifyAdminToken, (req, res) => {
 });
 
 
-router.get('/api/tremendous/listFundingSources', verifyAdminToken, (req, res) => {
-
-    // if JWT is invalid: req.body.user == undefined
-    if (req.body.user == undefined) {
-        console.log("Invalid JWT token");
-        res.status(403)
-        .send({
-            message: "Invalid JWT token"
-        });
-        return;
-    }
+router.get('/api/tremendous/listFundingSources', verifyAdminToken, gotJWT, (req, res) => {
 
     console.log("forwarding to tremendous.com/api/v2/funding_sources");
 
@@ -81,17 +70,7 @@ router.get('/api/tremendous/listFundingSources', verifyAdminToken, (req, res) =>
 });
 
 
-router.post('/api/tremendous/sendPayment', verifySurveyToken, (req, res) => {
-
-    // if JWT is invalid: req.body.surveyTaker == undefined
-    if (req.body.surveyTaker == undefined) {
-        console.log("Invalid JWT token");
-        res.status(403)
-        .send({
-            message: "Invalid JWT token"
-        });
-        return;
-    }
+router.post('/api/tremendous/sendPayment', verifySurveyToken, gotJWT, (req, res) => {
 
     console.log("forwarding to tremendous.com/api/v2/orders");
 
