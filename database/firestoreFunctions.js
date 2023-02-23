@@ -21,7 +21,7 @@ const firebaseConfig = {
   storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.FIREBASE_APP_ID,
-}
+};
 initializeApp(firebaseConfig);
 
 const auth = getAuth();
@@ -45,22 +45,16 @@ async function getUser(userID) {
   }
 }
 
-async function postUser(userID, email, hash, fullName, role) {
+async function postUser(user) {
   const db = getFirestore();
-  const docRef = doc(db, "users", userID);
+  const docRef = doc(db, "users", user.email);
   try {
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return 409;
     } else {
-      await setDoc(docRef, {
-        fullName: fullName,
-        email: email,
-        hash: hash,
-        role: role,
-        surveys: [],
-      });
-    return 201;
+      await setDoc(docRef, user);
+      return 201;
     }
   } catch (error) {
     console.log(error);
@@ -75,8 +69,8 @@ async function getSurveyConfigs(userID, index = 0, limit = index + 5) {
   let docSnap = await getDoc(userRef);
   try {
     if (docSnap.exists()) {
-      var surveyList = []
-      let surveyIDs = docSnap.data().surveys
+      var surveyList = [];
+      let surveyIDs = docSnap.data().surveys;
       for (var i = index; i < limit; i++) {
         if (i >= surveyIDs.length) {
           break;
@@ -87,7 +81,7 @@ async function getSurveyConfigs(userID, index = 0, limit = index + 5) {
         if (surveySnap.exists()) {
           surveyList.push(surveySnap.data());
         }
-      };
+      }
       return surveyList;
     } else {
       console.log("User does not exist");
@@ -114,11 +108,7 @@ async function getSurveyConfig(id) {
   }
 }
 
-async function postSurveyConfig(
-  userID,
-  surveyID,
-  surveyData
-) {
+async function postSurveyConfig(userID, surveyID, surveyData) {
   const db = getFirestore();
   const docRef = doc(db, "surveys", surveyID);
   console.log(`Saving survey ${surveyID} for user ${userID}`);
@@ -127,7 +117,9 @@ async function postSurveyConfig(
     if (docSnap.exists()) {
       if (docSnap.data().admins.includes(userID)) {
         console.log("User is admin, updating survey");
-        surveyData.lastUpdated = new Date().toLocaleString("en-US", { timeZone: "CST" });
+        surveyData.lastUpdated = new Date().toLocaleString("en-US", {
+          timeZone: "CST",
+        });
         setDoc(docRef, surveyData);
         return 201;
       } else {
@@ -153,7 +145,7 @@ async function deleteSurveyConfig(userID, surveyID) {
       if (docSnap.data().admins.includes(userID)) {
         console.log("User is admin, deleting survey");
         for (let admin of docSnap.data().admins) {
-          console.log("Removing survey from admin: ", admin)
+          console.log("Removing survey from admin: ", admin);
           await deleteSurveyFromUser(admin, surveyID);
         }
         deleteDoc(docRef);
@@ -202,7 +194,9 @@ async function getResponse(surveyID, alias) {
 
 async function getResponses(userID, surveyID) {
   const db = getFirestore();
-  const surveyRef = query(collection(db, "responses", surveyID, "surveyResults"));
+  const surveyRef = query(
+    collection(db, "responses", surveyID, "surveyResults")
+  );
   try {
     let docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -226,11 +220,7 @@ async function getResponses(userID, surveyID) {
   }
 }
 
-async function postResponse(
-  surveyID,
-  alias,
-  response
-) {
+async function postResponse(surveyID, alias, response) {
   const db = getFirestore();
   const aliasRef = doc(db, "responses", surveyID, "aliases", alias);
   try {
@@ -319,11 +309,7 @@ async function postIncentive(surveyID, hash) {
   }
 }
 
-async function putIncentiveInfo(
-  surveyID,
-  hash,
-  data
-) {
+async function putIncentiveInfo(surveyID, hash, data) {
   const db = getFirestore();
   const hashRef = doc(db, "responses", surveyID, "incentives", hash);
   try {
