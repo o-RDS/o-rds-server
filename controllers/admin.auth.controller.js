@@ -3,7 +3,7 @@ var bcrypt = require("bcrypt");
 var fs = require("fs");
 const { getUser, postUser } = require("../database/firestoreFunctions.js");
 
-exports.register = (req, res) => {
+exports.register = async (req, res) => {
   if (
     !req.body.fullname ||
     !req.body.email ||
@@ -23,7 +23,7 @@ exports.register = (req, res) => {
     surveys: [],
   };
 
-  let status = postUser(user);
+  let status = await postUser(user);
   if (status === 201) {
     console.log("User created");
     res.status(201).send({ message: "User created" });
@@ -39,8 +39,8 @@ exports.register = (req, res) => {
   }
 };
 
-exports.login = (req, res) => {
-  user = getUser(req.body.email);
+exports.login = async (req, res) => {
+  user = await getUser(req.body.email);
   if (user === undefined) {
     console.log("Internal server error");
     res.status(500).send({ message: "Internal server error" });
