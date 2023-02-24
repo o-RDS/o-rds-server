@@ -290,17 +290,98 @@ router.post("/api/response", verifySurveyToken, gotJWT, async function (req, res
 });
 
 router.delete("/api/response", verifyAdminToken, gotJWT, async function (req, res) {
-  //TODO
+  //console.log(req.body);
+  if (req.body.surveyID == undefined || req.body.responseID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID or responseID"
+      });
+  }
+  else {
+    let result = await deleteResponse(req.body.user.email, req.body.surveyID, req.body.alias);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 403) {
+      res.status(403)
+        .send({
+          message: "Unauthorized access, not your survey"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "Response or survey does not exist"
+        });
+    }
+    else {
+      res.status(200)
+        .send({
+          message: "Response deleted"
+        });
+    }
+  }
 });
 
 // INCENTIVE ROUTES
 
-router.post("/api/hash", verifySurveyToken, gotJWT, async function (req, res) {
-  //TODO
+router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
+  if (req.body.surveyID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID"
+      });
+  }
+  else {
+    let result = await postHash(req.body.surveyID, req.body.user.hash);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 409) {
+      res.status(409)
+        .send({
+          message: "Hash already exists"
+        });
+    } else {
+      res.status(201)
+        .send({
+          message: "Hash created"
+        });
+    }
+  }
 });
 
 router.get("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
-  //TODO
+  if (req.body.surveyID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID"
+      });
+  }
+  else {
+    let result = await getHash(req.body.surveyID, req.body.user.hash);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "Hash does not exist"
+        });
+    } else {
+      res.status(200)
+        .send(result);
+    }
+  }
 });
 
 router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {

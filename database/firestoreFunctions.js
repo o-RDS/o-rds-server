@@ -279,7 +279,7 @@ async function deleteResponse(userID, surveyID, responseID){
 
 // INCENTIVE FUNCTIONS
 
-async function postHash(surveyID, hash) {
+async function postIncentive(surveyID, hash) {
   const db = getFirestore();
   const hashRef = doc(db, "responses", surveyID, "incentives", hash);
   try {
@@ -291,10 +291,10 @@ async function postHash(surveyID, hash) {
         successfulReferrals: 0,
         claimedReferrals: 0,
       });
-      return false;
+      return 201;
     } else {
       console.log("Hash already exists");
-      return docSnap.data();
+      return 409;
     }
   } catch (error) {
     console.log(error);
@@ -310,14 +310,14 @@ async function getIncentiveInfo(surveyID, hash) {
       return docSnap.data();
     } else {
       console.log("Hash does not exist");
-      return false;
+      return 404;
     }
   } catch (error) {
     console.log(error);
   }
 }
 
-async function postIncentive(surveyID, hash) {
+async function completeIncentive(surveyID, hash) {
   const db = getFirestore();
   const hashRef = doc(db, "responses", surveyID, "incentives", hash);
   try {
@@ -441,9 +441,10 @@ module.exports.deleteSurveyConfig = deleteSurveyConfig;
 module.exports.getResponse = getResponse;
 module.exports.getResponses = getResponses;
 module.exports.postResponse = postResponse;
-module.exports.postHash = postHash;
-module.exports.getIncentiveInfo = getIncentiveInfo;
+module.exports.deleteResponse = deleteResponse;
 module.exports.postIncentive = postIncentive;
+module.exports.getIncentiveInfo = getIncentiveInfo;
+module.exports.completeIncentive = completeIncentive;
 module.exports.putIncentiveInfo = putIncentiveInfo;
 module.exports.postAlias = postAlias;
 module.exports.patchSurveyFromUser = patchSurveyFromUser;
