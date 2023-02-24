@@ -248,6 +248,35 @@ async function postResponse(surveyID, alias, response) {
   }
 }
 
+async function deleteResponse(userID, surveyID, responseID){
+  const db = getFirestore();
+  const surveyRef = doc(db, "surveys", surveyID);
+  const responseRef = doc(db, "responses", surveyID, "surveyResults", responseID);
+  try {
+    let surveySnap = await getDoc(surveyRef);
+    if (surveySnap.exists()) {
+      if (surveySnap.data().admins.includes(userID)) {
+        let docSnap = await getDoc(responseRef);
+        if (docSnap.exists()) {
+          deleteDoc(responseRef);
+          return 200;
+        } else {
+          console.log("Response does not exist");
+          return 404;
+        }
+      } else {
+        console.log("Unauthorized access to survey");
+        return 403;
+      }
+    } else {
+      console.log("Survey does not exist");
+      return 404;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 // INCENTIVE FUNCTIONS
 
 async function postHash(surveyID, hash) {
