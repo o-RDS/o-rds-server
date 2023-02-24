@@ -6,10 +6,7 @@ const {
   getResponse,
   getResponses,
   postResponse,
-  postHash,
   getIncentiveInfo,
-  postIncentive,
-  putIncentiveInfo,
   postAlias,
   patchSurveyFromUser,
   patchSurveyToUser
@@ -268,7 +265,7 @@ router.post("/api/response", verifySurveyToken, gotJWT, async function (req, res
       });
   }
   else {
-    let result = await postResponse(req.body.surveyID, req.body.alias, req.body.responseData);
+    let result = await postResponse(req.body.surveyID, req.body.alias, req.body.responseData, req.body.user.hash);
     if (result == undefined) {
       res.status(500)
         .send({
@@ -365,7 +362,7 @@ router.get("/api/incentive", verifySurveyToken, gotJWT, async function (req, res
       });
   }
   else {
-    let result = await getHash(req.body.surveyID, req.body.user.hash);
+    let result = await getIncentiveInfo(req.body.surveyID, req.body.user.hash);
     if (result == undefined) {
       res.status(500)
         .send({
@@ -384,10 +381,6 @@ router.get("/api/incentive", verifySurveyToken, gotJWT, async function (req, res
   }
 });
 
-router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
-  //TODO
-});
-
 router.put("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
   //TODO
 });
@@ -395,15 +388,73 @@ router.put("/api/incentive", verifySurveyToken, gotJWT, async function (req, res
 // OTHER ROUTES
 
 router.post("/api/alias", verifySurveyToken, gotJWT, async function (req, res) {
-  //TODO
+  if (req.body.surveyID) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID"
+      });
+  }
+  else {
+    let result = await postAlias(req.body.surveyID);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else {
+      res.status(201)
+        .send(result);
+    }
+  }
 });
 
 router.patch("/api/user-remove", verifyAdminToken, gotJWT, async function (req, res) {
-  //TODO
+  if (req.body.surveyID == undefined || req.body.email == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID or email"
+      });
+  }
+  else {
+    let result = await patchSurveyFromUser(req.body.email, req.body.surveyID);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "User or survey does not exist"
+        });
+    }
+  }
 });
 
 router.patch("/api/user-add", verifyAdminToken, gotJWT, async function (req, res) {
-  //TODO
+  if (req.body.surveyID == undefined || req.body.email == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID or email"
+      });
+  }
+  else {
+    let result = await patchSurveyToUser(req.body.email, req.body.surveyID);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "User or survey does not exist"
+        });
+    }
+  }
 });
 
 module.exports = router;

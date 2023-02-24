@@ -220,7 +220,7 @@ async function getResponses(userID, surveyID) {
   }
 }
 
-async function postResponse(surveyID, alias, response) {
+async function postResponse(surveyID, alias, response, hash) {
   const db = getFirestore();
   const aliasRef = doc(db, "responses", surveyID, "aliases", alias);
   try {
@@ -236,6 +236,7 @@ async function postResponse(surveyID, alias, response) {
       );
       setDoc(responseRef, response);
       if (response.completed) {
+        completeIncentive(surveyID, hash);
         deleteDoc(aliasRef);
       }
       return 201;
@@ -389,9 +390,9 @@ async function postAlias(surveyID) {
     tries++;
   }
   console.log("Failed to create alias");
-  return false;
 }
 
+// TODO prevent removing survey creator
 async function patchSurveyFromUser(userID, surveyID) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
@@ -401,17 +402,17 @@ async function patchSurveyFromUser(userID, surveyID) {
       let newData = docSnap.data();
       newData.surveys = newData.surveys.filter((id) => id !== surveyID);
       setDoc(userRef, newData);
-      return true;
+      return 200;
     } else {
-      console.log("Document does not exist");
-      return false;
+      console.log("Survey does not exist");
+      return 404;
     }
   } catch (error) {
     console.log(error);
-    return false;
   }
 }
 
+// TODO, check that people change admins are admins
 async function patchSurveyToUser(userID, surveyID) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
@@ -421,14 +422,13 @@ async function patchSurveyToUser(userID, surveyID) {
       let newData = docSnap.data();
       newData.surveys.push(surveyID);
       setDoc(userRef, newData);
-      return true;
+      return 200;
     } else {
-      console.log("Document does not exist");
-      return false;
+      console.log("Survey does not exist");
+      return 404;
     }
   } catch (error) {
     console.log(error);
-    return false;
   }
 }
 
