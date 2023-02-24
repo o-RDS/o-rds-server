@@ -28,6 +28,27 @@ const auth = getAuth();
 // server could have account info in .env file in future for double security
 signInAnonymously(auth);
 
+async function isAdmin(surveyID, hash) {
+  const db = getFirestore();
+  const docRef = doc(db, "surveys", surveyID);
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      if (docSnap.data().admins.includes(hash)) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      console.log("Survey does not exist");
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
 // AUTH FUNCTIONS
 async function getUser(userID) {
   const db = getFirestore();
@@ -146,7 +167,7 @@ async function deleteSurveyConfig(userID, surveyID) {
         console.log("User is admin, deleting survey");
         for (let admin of docSnap.data().admins) {
           console.log("Removing survey from admin: ", admin);
-          await deleteSurveyFromUser(admin, surveyID);
+          await deleteSurveyFromUser(admin, surveyID, userID);
         }
         deleteDoc(docRef);
         return 200;
@@ -249,7 +270,7 @@ async function postResponse(surveyID, alias, response, hash) {
   }
 }
 
-async function deleteResponse(userID, surveyID, responseID){
+async function deleteResponse(userID, surveyID, responseID) {
   const db = getFirestore();
   const surveyRef = doc(db, "surveys", surveyID);
   const responseRef = doc(db, "responses", surveyID, "surveyResults", responseID);
@@ -392,43 +413,51 @@ async function postAlias(surveyID) {
   console.log("Failed to create alias");
 }
 
-// TODO prevent removing survey creator
-async function patchSurveyFromUser(userID, surveyID) {
+async function patchSurveyFromUser(userID, surveyID, adminID) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
-  try {
-    let docSnap = await getDoc(userRef);
-    if (docSnap.exists()) {
-      let newData = docSnap.data();
-      newData.surveys = newData.surveys.filter((id) => id !== surveyID);
-      setDoc(userRef, newData);
-      return 200;
-    } else {
-      console.log("Survey does not exist");
-      return 404;
+  if (await isAdmin(surveyID, adminID)) {
+    try {
+      let docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        let newData = docSnap.data();
+        newData.surveys = newData.surveys.filter((id) => id !== surveyID);
+        setDoc(userRef, newData);
+        return 200;
+      } else {
+        console.log("Survey does not exist");
+        return 404;
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
+  } else {
+    console.log("Unauthorized access to survey");
+    return 403;
   }
 }
 
-// TODO, check that people change admins are admins
-async function patchSurveyToUser(userID, surveyID) {
+async function patchSurveyToUser(userID, surveyID, adminID) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
-  try {
-    let docSnap = await getDoc(userRef);
-    if (docSnap.exists()) {
-      let newData = docSnap.data();
-      newData.surveys.push(surveyID);
-      setDoc(userRef, newData);
-      return 200;
-    } else {
-      console.log("Survey does not exist");
-      return 404;
+  if( await isAdmin(surveyID, adminID)) {
+    try {
+      let docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        let newData = docSnap.data();
+        newData.surveys.push(surveyID);
+        setDoc(userRef, newData);
+        return 200;
+      } else {
+        console.log("Survey does not exist");
+        return 404;
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
+  } else {
+    console.log("Unauthorized access to survey");
+    return 403;
   }
 }
 
