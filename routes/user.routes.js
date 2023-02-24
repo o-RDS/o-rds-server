@@ -37,10 +37,10 @@ function gotJWT(req, res, next) {
 
 // AUTH ROUTES
 
-router.post("/register", register, function (req, res) {
+router.post("/api/register", register, function (req, res) {
 });
 
-router.post('/login', login, function (req, res) {
+router.post('/api/login', login, function (req, res) {
 });
 
 // SURVEY ROUTES
