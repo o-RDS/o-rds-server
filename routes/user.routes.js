@@ -13,7 +13,7 @@ const {
   postAlias,
   patchSurveyFromUser,
   patchSurveyToUser
-} = require('../database/databaseFunctions.js');
+} = require('../database/firestoreFunctions.js');
 var express = require("express"),
   verifyAdminToken = require("../middlewares/admin.JWT.auth"),
   verifySurveyToken = require('../middlewares/survey.JWT.auth.js'),
