@@ -215,6 +215,7 @@ async function getResponse(surveyID, alias) {
 
 async function getResponses(userID, surveyID) {
   const db = getFirestore();
+  const docRef = doc(db, "surveys", surveyID);
   const surveyRef = query(
     collection(db, "responses", surveyID, "surveyResults")
   );
