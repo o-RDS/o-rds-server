@@ -44,7 +44,7 @@ router.post('/api/login', login, function (req, res) {
 
 router.get("/api/survey/:surveyID", verifyToken, gotJWT, async function (req, res) {
   //console.log(req.body);
-  let result = await getSurveyConfig(req.body.surveyID);
+  let result = await getSurveyConfig(req.params.surveyID);
   if (result == undefined) {
     res.status(500)
       .send({
@@ -101,14 +101,14 @@ router.get("/api/surveys", verifyAdminToken, gotJWT, async function (req, res) {
 router.post("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
   if (req.body.user.role == "admin") {
-    if (req.body.surveyID == undefined || req.body.surveyData == undefined) {
+    if (req.params.surveyID == undefined || req.body.surveyData == undefined) {
       res.status(400)
         .send({
           message: "Invalid request, missing surveyID or data"
         });
     }
     else {
-      let result = await postSurveyConfig(req.body.user.email, req.body.surveyID, req.body.surveyData);
+      let result = await postSurveyConfig(req.body.user.email, req.params.surveyID, req.body.surveyData);
       if (result == undefined) {
         res.status(500)
           .send({
@@ -136,17 +136,17 @@ router.post("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
   }
 });
 
-router.delete("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
+router.delete("/api/survey/:surveyID", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
   if (req.body.user.role == "admin") {
-    if (req.body.surveyID == undefined) {
+    if (req.params.surveyID == undefined) {
       res.status(400)
         .send({
           message: "Invalid request, missing surveyID"
         });
     }
     else {
-      let result = await deleteSurveyConfig(req.body.user.email, req.body.surveyID);
+      let result = await deleteSurveyConfig(req.body.user.email, req.params.surveyID);
       if (result == undefined) {
         res.status(500)
           .send({
@@ -182,16 +182,16 @@ router.delete("/api/survey", verifyAdminToken, gotJWT, async function (req, res)
 
 // RESPONSE ROUTES
 
-router.get("/api/response", verifySurveyToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID/response/:alias", verifySurveyToken, gotJWT, async function (req, res) {
   //console.log(req.body);
-  if (req.body.alias == undefined || req.body.surveyID == undefined) {
+  if (req.params.alias == undefined || req.params.surveyID == undefined) {
     res.status(400)
       .send({
         message: "Invalid request, missing alias or surveyID"
       });
   }
   else {
-    let result = await getResponse(req.body.surveyID, req.body.alias);
+    let result = await getResponse(req.params.surveyID, req.params.alias);
     if (result == undefined) {
       res.status(500)
         .send({
@@ -214,14 +214,14 @@ router.get("/api/response", verifySurveyToken, gotJWT, async function (req, res)
 
 router.get("/api/responses", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
-  if (req.body.surveyID == undefined) {
+  if (req.params.surveyID == undefined) {
     res.status(400)
       .send({
         message: "Invalid request, missing surveyID"
       });
   }
   else {
-    let result = await getResponses(req.body.user.email, req.body.surveyID);
+    let result = await getResponses(req.body.user.email, req.params.surveyID);
     if (result == undefined) {
       res.status(500)
         .send({
@@ -346,7 +346,7 @@ router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, re
   }
 });
 
-router.get("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID/incentive", verifySurveyToken, gotJWT, async function (req, res) {
   if (req.body.surveyID == undefined) {
     res.status(400)
       .send({
