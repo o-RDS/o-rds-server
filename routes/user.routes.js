@@ -42,45 +42,37 @@ router.post('/api/login', login, function (req, res) {
 
 // SURVEY ROUTES
 
-router.get("/api/survey", verifyToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID", verifyToken, gotJWT, async function (req, res) {
   //console.log(req.body);
-  if (req.body.surveyID == undefined) {
-    res.status(400)
+  let result = await getSurveyConfig(req.body.surveyID);
+  if (result == undefined) {
+    res.status(500)
       .send({
-        message: "Invalid request, missing surveyID"
+        message: "Internal Server Error"
       });
   }
-  else {
-    let result = await getSurveyConfig(req.body.surveyID);
-    if (result == undefined) {
-      res.status(500)
-        .send({
-          message: "Internal Server Error"
-        });
-    }
-    else if (result == 404) {
-      res.status(404)
-        .send({
-          message: "Survey does not exist"
-        });
-    } else {
-      res.status(200)
-        .send(
-          result
-        );
-    }
+  else if (result == 404) {
+    res.status(404)
+      .send({
+        message: "Survey does not exist"
+      });
+  } else {
+    res.status(200)
+      .send(
+        result
+      );
   }
 });
 
 router.get("/api/surveys", verifyAdminToken, gotJWT, async function (req, res) {
   if (req.body.user.role == "admin") {
-    if (req.body.index == undefined) {
-      req.body.index = 0;
+    if (req.query.index == undefined) {
+      req.query.index = 0;
     }
-    if (req.body.limit == undefined) {
-      req.body.limit = req.body.index + 5;
+    if (req.query.limit == undefined) {
+      req.query.limit = req.query.index + 5;
     }
-    let result = await getSurveyConfigs(req.body.user.email, req.body.index, req.body.limit);
+    let result = await getSurveyConfigs(req.body.user.email, req.query.index, req.query.limit);
     if (result == undefined) {
       res.status(500)
         .send({
