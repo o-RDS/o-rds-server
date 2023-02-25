@@ -8,11 +8,11 @@ require("dotenv").config();
 
 
 // will require rate limiting 
-router.post('/twilio/verification', verification, (req, res) => {
+router.post('/api/twilio/verification', verification, (req, res) => {
 
 });
 
-router.post('/twilio/verificationCheck', verificationCheck, (req, res) => {
+router.post('/api/twilio/verificationCheck', verificationCheck, (req, res) => {
 
 });
 

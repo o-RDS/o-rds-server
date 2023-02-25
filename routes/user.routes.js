@@ -42,7 +42,7 @@ router.post('/api/login', login, function (req, res) {
 
 // SURVEY ROUTES
 
-router.get("/api/survey/:surveyID", verifyToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID", async function (req, res) {
   //console.log(req.body);
   let result = await getSurveyConfig(req.params.surveyID);
   if (result == undefined) {
