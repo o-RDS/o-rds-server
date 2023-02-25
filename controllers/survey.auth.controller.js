@@ -6,6 +6,7 @@ require("dotenv").config();
 
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
+const TESTING = process.env.TESTING;
 
 exports.verification = (req, res) => {
 
@@ -30,23 +31,35 @@ exports.verification = (req, res) => {
     };
 
     // send them their code
-    client.messages
-        .create({ body: message, from: process.env.TWILIO_PHONE_NUMBER, to: to })
-        .then(message => {
-            if (message.error_code == null) { // message sent successfully
-                saveUserToFolder(surveyTaker, function (err) {
-                    if (err) {
-                        console.log(err);
-                        res.status(404).send({ message: "Survey taker not saved." });
-                        return;
-                    }
-                    res.status(200).send({ message: "Survey taker registered successfully. Verification code has been sent." });
-                    console.log("New survey taker registered");
-                })
-            } else { // Twilio error
-                res.status(500).send({ message: message.error_message });
+    if (!TESTING) {
+        client.messages
+            .create({ body: message, from: process.env.TWILIO_PHONE_NUMBER, to: to })
+            .then(message => {
+                if (message.error_code == null) { // message sent successfully
+                    saveUserToFolder(surveyTaker, function (err) {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send({ message: "Survey taker not saved." });
+                            return;
+                        }
+                        res.status(200).send({ message: "Survey taker registered successfully. Verification code has been sent." });
+                        console.log("New survey taker registered");
+                    })
+                } else { // Twilio error
+                    res.status(500).send({ message: message.error_message });
+                }
+            });
+    } else {
+        saveUserToFolder(surveyTaker, function (err) {
+            if (err) {
+                console.log(err);
+                res.status(500).send({ message: "Survey taker not saved." });
+                return;
             }
-        });
+            res.status(200).send({ message: `Survey taker registered successfully. Verification code is ${code}.` });
+            console.log("New survey taker registered");
+        })
+    }
 
 };
 
