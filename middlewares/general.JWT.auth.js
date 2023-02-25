@@ -4,7 +4,7 @@ var fs = require('fs');
 const verifyToken = (req, res, next) => {
     // checking validity of JWT
     if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
-        jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_API_SECRET, function (err, decode) {
+        jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_API_SECRET, async function (err, decode) {
             if (err) {
                 console.log(err);
                 req.body.user = undefined;
@@ -24,18 +24,18 @@ const verifyToken = (req, res, next) => {
                     }
                 });
             } else {
-                fs.readFile(`./admin.data/${decode.email}.json`, (err, data) => {
-                    if (err) {
-                        console.log(err);
-                        res.status(404).send({
-                            message: "User not found."
-                        });
-                    } else {
-                        var user = JSON.parse(data);
-                        req.body.user = user;
-                        next();
-                    }
-                });
+              user = await getUser(decode.email);
+              if (user === undefined) {
+                req.body.user = undefined;
+                next();
+              } else if (user === 404) {
+                console.log("User not found");
+                req.body.user = undefined;
+                next();
+              } else {
+                req.body.user = user;
+                next();
+              }
             }
         });
     } else { // JWT not valid, req.body.user gets undefined
