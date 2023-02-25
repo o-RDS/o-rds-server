@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 var fs = require('fs');
+const { getUser } = require("../database/firestoreFunctions");
 
 const verifyToken = (req, res, next) => {
     // checking validity of JWT
