@@ -50,6 +50,7 @@ exports.verification = (req, res) => {
                 }
             });
     } else {
+        console.log("Verification in TESTING MODE")
         saveUserToFolder(surveyTaker, function (err) {
             if (err) {
                 console.log(err);
@@ -67,8 +68,8 @@ exports.verificationCheck = (req, res) => {
 
     // hash the phone number
     const hash = crypto.createHash('sha256').update(req.body.to).digest('base64');
-
-    fs.readFile(`./survey.data/${hash}.json`, (err, data) => {
+    const cleanHash = hash.replace(/[\\\/+]/g, '');
+    fs.readFile(`./survey.data/${cleanHash}.json`, (err, data) => {
         if (err) {
             console.log(err);
             res.status(500).send(err);
@@ -119,6 +120,7 @@ exports.verificationCheck = (req, res) => {
 };
 
 function saveUserToFolder(surveyTaker, callback) {
-    fs.writeFile(`./survey.data/${surveyTaker.hash}.json`, JSON.stringify(surveyTaker), callback);
+    const cleanHash = surveyTaker.hash.replace(/[\\\/+]/g, '');
+    fs.writeFile(`./survey.data/${cleanHash}.json`, JSON.stringify(surveyTaker), callback);
 }
 

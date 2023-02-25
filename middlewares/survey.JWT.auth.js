@@ -13,7 +13,8 @@ const verifySurveyToken = (req, res, next) => {
             }
 
             // if valid, add user data onto req.body
-            fs.readFile(`./survey.data/${decode.hash}.json`, (err, data) => {
+            const cleanHash = decode.hash.replace(/[\\\/+]/g, '');
+            fs.readFile(`./survey.data/${cleanHash}.json`, (err, data) => {
                 if (err) {
                     console.log(err);
                     res.status(404).send({
