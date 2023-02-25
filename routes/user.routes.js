@@ -98,7 +98,7 @@ router.get("/api/surveys", verifyAdminToken, gotJWT, async function (req, res) {
   }
 });
 
-router.post("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
+router.post("/api/survey/:surveyID", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
   if (req.body.user.role == "admin") {
     if (req.params.surveyID == undefined || req.body.surveyData == undefined) {
@@ -212,7 +212,7 @@ router.get("/api/survey/:surveyID/response/:alias", verifySurveyToken, gotJWT, a
   }
 });
 
-router.get("/api/responses", verifyAdminToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID/responses", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
   if (req.params.surveyID == undefined) {
     res.status(400)
