@@ -17,19 +17,8 @@ const verifyToken = (req, res, next) => {
                 next();
             }
             else if (decode.hash != undefined) {
-                const cleanHash = decode.hash.replace(/[\\\/+]/g, '');
-                fs.readFile(`./survey.data/${cleanHash}.json`, (err, data) => {
-                    if (err) {
-                        console.log(err);
-                        res.status(404).send({
-                            message: "Survey taker not found."
-                        });
-                    } else {
-                        var surveyTaker = JSON.parse(data);
-                        req.body.user = surveyTaker;
-                        next();
-                    }
-                });
+                req.body.user = { hash: decode.hash };
+                next();
             } else {
                 user = await getUser(decode.email);
                 if (user === undefined) {

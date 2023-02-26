@@ -15,7 +15,8 @@ exports.verification = (req, res) => {
 
     // hash the phone number
     const hash = crypto.createHash('sha256').update(to).digest('base64');
-    const cleanHash = surveyTaker.hash.replace(/[\\\/+]/g, '-');
+    const cleanHash = hash.replaceAll('\\', 'x').replaceAll('/', 'y');
+    console.log(cleanHash)
 
     // create code and message
     const code = Math.floor(100000 + Math.random() * 900000);
@@ -68,7 +69,7 @@ exports.verification = (req, res) => {
 exports.verificationCheck = (req, res) => {
     // hash the phone number
     const hash = crypto.createHash('sha256').update(req.body.to).digest('base64');
-    const cleanHash = hash.replace(/[\\\/+]/g, '-');
+    const cleanHash = hash.replaceAll('\\', 'x').replaceAll('/', 'y')
     fs.readFile(`./survey.data/${cleanHash}.json`, (err, data) => {
         if (err) {
             console.log(err);
@@ -113,6 +114,12 @@ exports.verificationCheck = (req, res) => {
                 message: "Survey taker verification successful",
                 accessToken: token
             });
+        fs.unlink(`./survey.data/${cleanHash}.json`, (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log("Used OTP Cleared successfully.");
+        });
         console.log("Survey taker verification successful");
 
     });

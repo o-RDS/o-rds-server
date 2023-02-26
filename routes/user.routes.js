@@ -381,7 +381,8 @@ router.put("/api/incentive", verifySurveyToken, gotJWT, async function (req, res
 // OTHER ROUTES
 
 router.post("/api/alias", verifySurveyToken, gotJWT, async function (req, res) {
-  if (req.body.surveyID) {
+  console.log(req.body);
+  if (req.body.surveyID == undefined) {
     res.status(400)
       .send({
         message: "Invalid request, missing surveyID"

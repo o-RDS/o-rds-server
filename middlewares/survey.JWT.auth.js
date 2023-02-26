@@ -11,22 +11,11 @@ const verifySurveyToken = (req, res, next) => {
                 req.body.user = undefined;
                 next();
             }
-
             // if valid, add user data onto req.body
-            const cleanHash = decode.hash.replace(/[\\\/+]/g, '');
-            console.log(cleanHash);
-            fs.readFile(`./survey.data/${cleanHash}.json`, (err, data) => {
-                if (err) {
-                    console.log(err);
-                    res.status(404).send({
-                        message: "Survey taker not found."
-                    });
-                } else {
-                    var surveyTaker = JSON.parse(data);
-                    req.body.user = surveyTaker;
-                    next();
-                }
-            });
+            else {
+                req.body.user = { hash: decode.hash };
+                next();
+            }
         });
     } else { // JWT not valid, req.body.surveyTaker gets undefined
         req.body.user = undefined;
