@@ -36,7 +36,11 @@ async function isAdmin(surveyID, hash) {
     if (docSnap.exists()) {
       if (docSnap.data().admins.includes(hash)) {
         return true;
-      } else {
+      }
+      else if (docSnap.data().admins.length === 0) {
+        return true;
+      }
+      else {
         return false;
       }
     } else {
@@ -96,7 +100,7 @@ async function getSurveyConfigs(userID, index = 0, count = 5) {
         if (i + index >= surveyIDs.length) {
           break;
         }
-        let surveyID = surveyIDs[(i+index)];
+        let surveyID = surveyIDs[(i + index)];
         const surveyRef = doc(db, "surveys", surveyID);
         let surveySnap = await getDoc(surveyRef);
         if (surveySnap.exists()) {
@@ -441,7 +445,7 @@ async function patchSurveyFromUser(userID, surveyID, adminID) {
 async function patchSurveyToUser(userID, surveyID, adminID) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
-  if( await isAdmin(surveyID, adminID)) {
+  if (await isAdmin(surveyID, adminID)) {
     try {
       let docSnap = await getDoc(userRef);
       if (docSnap.exists()) {
