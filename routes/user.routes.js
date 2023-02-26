@@ -348,14 +348,14 @@ router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, re
 });
 
 router.get("/api/survey/:surveyID/incentive", verifySurveyToken, gotJWT, async function (req, res) {
-  if (req.body.surveyID == undefined) {
+  if (req.params.surveyID == undefined) {
     res.status(400)
       .send({
         message: "Invalid request, missing surveyID"
       });
   }
   else {
-    let result = await getIncentiveInfo(req.body.surveyID, req.body.user.hash);
+    let result = await getIncentiveInfo(req.params.surveyID, req.body.user.hash);
     if (result == undefined) {
       res.status(500)
         .send({
