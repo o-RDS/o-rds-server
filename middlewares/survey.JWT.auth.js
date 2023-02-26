@@ -8,12 +8,13 @@ const verifySurveyToken = (req, res, next) => {
         jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_API_SECRET, function (err, decode) {
             if (err) {
                 console.log(err);
-                req.body.surveyTaker = undefined;
+                req.body.user = undefined;
                 next();
             }
 
             // if valid, add user data onto req.body
             const cleanHash = decode.hash.replace(/[\\\/+]/g, '');
+            console.log(cleanHash);
             fs.readFile(`./survey.data/${cleanHash}.json`, (err, data) => {
                 if (err) {
                     console.log(err);
@@ -22,13 +23,13 @@ const verifySurveyToken = (req, res, next) => {
                     });
                 } else {
                     var surveyTaker = JSON.parse(data);
-                    req.body.surveyTaker = surveyTaker;
+                    req.body.user = surveyTaker;
                     next();
                 }
             });
         });
     } else { // JWT not valid, req.body.surveyTaker gets undefined
-        req.body.surveyTaker = undefined;
+        req.body.user = undefined;
         next();
     }
 };

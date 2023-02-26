@@ -15,6 +15,7 @@ exports.verification = (req, res) => {
 
     // hash the phone number
     const hash = crypto.createHash('sha256').update(to).digest('base64');
+    const cleanHash = surveyTaker.hash.replace(/[\\\/+]/g, '-');
 
     // create code and message
     const code = Math.floor(100000 + Math.random() * 900000);
@@ -25,7 +26,7 @@ exports.verification = (req, res) => {
     var date = new Date();
     // create survey taker 
     var surveyTaker = {
-        hash: hash,
+        hash: cleanHash,
         code: bcrypt.hashSync(code.toString(), 8),
         timeCreated: date
     };
@@ -65,10 +66,9 @@ exports.verification = (req, res) => {
 };
 
 exports.verificationCheck = (req, res) => {
-
     // hash the phone number
     const hash = crypto.createHash('sha256').update(req.body.to).digest('base64');
-    const cleanHash = hash.replace(/[\\\/+]/g, '');
+    const cleanHash = hash.replace(/[\\\/+]/g, '-');
     fs.readFile(`./survey.data/${cleanHash}.json`, (err, data) => {
         if (err) {
             console.log(err);
@@ -120,7 +120,6 @@ exports.verificationCheck = (req, res) => {
 };
 
 function saveUserToFolder(surveyTaker, callback) {
-    const cleanHash = surveyTaker.hash.replace(/[\\\/+]/g, '');
-    fs.writeFile(`./survey.data/${cleanHash}.json`, JSON.stringify(surveyTaker), callback);
+    fs.writeFile(`./survey.data/${surveyTaker.hash}.json`, JSON.stringify(surveyTaker), callback);
 }
 

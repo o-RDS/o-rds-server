@@ -26,7 +26,7 @@ const verifyToken = (req, res, next) => {
                         });
                     } else {
                         var surveyTaker = JSON.parse(data);
-                        req.body.surveyTaker = surveyTaker;
+                        req.body.user = surveyTaker;
                         next();
                     }
                 });

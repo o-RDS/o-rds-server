@@ -9,7 +9,8 @@ const {
   getIncentiveInfo,
   postAlias,
   patchSurveyFromUser,
-  patchSurveyToUser
+  patchSurveyToUser,
+  postIncentive
 } = require('../database/firestoreFunctions.js');
 var express = require("express"),
   verifyAdminToken = require("../middlewares/admin.JWT.auth"),
@@ -325,7 +326,7 @@ router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, re
       });
   }
   else {
-    let result = await postHash(req.body.surveyID, req.body.user.hash);
+    let result = await postIncentive(req.body.surveyID, req.body.user.hash);
     if (result == undefined) {
       res.status(500)
         .send({
