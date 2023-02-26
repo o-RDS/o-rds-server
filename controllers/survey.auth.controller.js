@@ -33,7 +33,7 @@ exports.verification = (req, res) => {
     };
 
     // send them their code
-    if (!TESTING) {
+    if (TESTING != "true") {
         client.messages
             .create({ body: message, from: process.env.TWILIO_PHONE_NUMBER, to: to })
             .then(message => {
