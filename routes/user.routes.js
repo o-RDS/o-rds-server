@@ -21,6 +21,7 @@ router = express.Router(),
     register,
     login
   } = require("../controllers/admin.auth.controller");
+import { createAccountLimiter } from "../middlewares/rateLimit"
 
 function gotJWT(req, res, next) {
   if (req.body.user == undefined) {
@@ -35,7 +36,7 @@ function gotJWT(req, res, next) {
 
 // AUTH ROUTES
 
-router.post("/api/register", register, function (req, res) {
+router.post("/api/register", createAccountLimiter, register, function (req, res) {
 });
 
 router.post('/api/login', login, function (req, res) {
