@@ -70,10 +70,10 @@ router.get("/api/surveys", verifyAdminToken, gotJWT, async function (req, res) {
     if (req.query.index == undefined) {
       req.query.index = 0;
     }
-    if (req.query.limit == undefined) {
-      req.query.limit = req.query.index + 5;
+    if (req.query.count == undefined) {
+      req.query.count = 5;
     }
-    let result = await getSurveyConfigs(req.body.user.email, req.query.index, req.query.limit);
+    let result = await getSurveyConfigs(req.body.user.email, parseInt(req.query.index), parseInt(req.query.count));
     if (result == undefined) {
       res.status(500)
         .send({

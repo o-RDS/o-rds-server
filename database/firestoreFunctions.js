@@ -84,19 +84,19 @@ async function postUser(user) {
 
 // SURVEY FUNCTIONS
 
-async function getSurveyConfigs(userID, index = 0, limit = index + 5) {
+async function getSurveyConfigs(userID, index = 0, count = 5) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
   let docSnap = await getDoc(userRef);
   try {
     if (docSnap.exists()) {
       var surveyList = [];
-      let surveyIDs = docSnap.data().surveys;
-      for (var i = index; i < limit; i++) {
-        if (i >= surveyIDs.length) {
+      var surveyIDs = docSnap.data().surveys;
+      for (let i = 0; i < count; i++) {
+        if (i + index >= surveyIDs.length) {
           break;
         }
-        let surveyID = surveyIDs[i];
+        let surveyID = surveyIDs[(i+index)];
         const surveyRef = doc(db, "surveys", surveyID);
         let surveySnap = await getDoc(surveyRef);
         if (surveySnap.exists()) {
