@@ -152,8 +152,9 @@ async function postSurveyConfig(userID, surveyID, surveyData) {
         return 403;
       }
     } else {
-      patchSurveyToUser(userID, surveyID);
-      setDoc(docRef, surveyData);
+      surveyData.admins = [userID];
+      await setDoc(docRef, surveyData);
+      patchSurveyToUser(userID, surveyID, userID);
       return 201;
     }
   } catch (error) {
@@ -443,6 +444,7 @@ async function patchSurveyFromUser(userID, surveyID, adminID) {
 }
 
 async function patchSurveyToUser(userID, surveyID, adminID) {
+  console.log(`Adding user ${userID} to survey ${surveyID}`)
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
   if (await isAdmin(surveyID, adminID)) {
