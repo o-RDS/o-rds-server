@@ -59,7 +59,10 @@ exports.verification = (req, res) => {
                 res.status(500).send({ message: "Survey taker not saved." });
                 return;
             }
-            res.status(200).send({ message: `Survey taker registered successfully. Verification code is ${code}.` });
+            res.status(200).send({
+                message: `Survey taker registered successfully. Verification code is ${code}.`,
+                code: code
+            });
             console.log("New survey taker registered");
         })
     }
