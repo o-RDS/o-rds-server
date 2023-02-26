@@ -6,6 +6,7 @@ require("dotenv").config();
 
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
+const TESTING = process.env.TESTING;
 
 exports.verification = (req, res) => {
 
@@ -14,6 +15,8 @@ exports.verification = (req, res) => {
 
     // hash the phone number
     const hash = crypto.createHash('sha256').update(to).digest('base64');
+    const cleanHash = hash.replaceAll('\\', 'x').replaceAll('/', 'y');
+    console.log(cleanHash)
 
     // create code and message
     const code = Math.floor(100000 + Math.random() * 900000);
@@ -24,38 +27,50 @@ exports.verification = (req, res) => {
     var date = new Date();
     // create survey taker 
     var surveyTaker = {
-        hash: hash,
+        hash: cleanHash,
         code: bcrypt.hashSync(code.toString(), 8),
         timeCreated: date
     };
 
     // send them their code
-    client.messages
-        .create({ body: message, from: process.env.TWILIO_PHONE_NUMBER, to: to })
-        .then(message => {
-            if (message.error_code == null) { // message sent successfully
-                saveUserToFolder(surveyTaker, function (err) {
-                    if (err) {
-                        console.log(err);
-                        res.status(404).send({ message: "Survey taker not saved." });
-                        return;
-                    }
-                    res.status(200).send({ message: "Survey taker registered successfully. Verification code has been sent." });
-                    console.log("New survey taker registered");
-                })
-            } else { // Twilio error
-                res.status(500).send({ message: message.error_message });
+    if (!TESTING) {
+        client.messages
+            .create({ body: message, from: process.env.TWILIO_PHONE_NUMBER, to: to })
+            .then(message => {
+                if (message.error_code == null) { // message sent successfully
+                    saveUserToFolder(surveyTaker, function (err) {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send({ message: "Survey taker not saved." });
+                            return;
+                        }
+                        res.status(200).send({ message: "Survey taker registered successfully. Verification code has been sent." });
+                        console.log("New survey taker registered");
+                    })
+                } else { // Twilio error
+                    res.status(500).send({ message: message.error_message });
+                }
+            });
+    } else {
+        console.log("Verification in TESTING MODE")
+        saveUserToFolder(surveyTaker, function (err) {
+            if (err) {
+                console.log(err);
+                res.status(500).send({ message: "Survey taker not saved." });
+                return;
             }
-        });
+            res.status(200).send({ message: `Survey taker registered successfully. Verification code is ${code}.` });
+            console.log("New survey taker registered");
+        })
+    }
 
 };
 
 exports.verificationCheck = (req, res) => {
-
     // hash the phone number
     const hash = crypto.createHash('sha256').update(req.body.to).digest('base64');
-
-    fs.readFile(`./survey.data/${hash}.json`, (err, data) => {
+    const cleanHash = hash.replaceAll('\\', 'x').replaceAll('/', 'y')
+    fs.readFile(`./survey.data/${cleanHash}.json`, (err, data) => {
         if (err) {
             console.log(err);
             res.status(500).send(err);
@@ -99,6 +114,12 @@ exports.verificationCheck = (req, res) => {
                 message: "Survey taker verification successful",
                 accessToken: token
             });
+        fs.unlink(`./survey.data/${cleanHash}.json`, (err) => {
+            if (err) {
+                throw err;
+            }
+            console.log("Used OTP Cleared successfully.");
+        });
         console.log("Survey taker verification successful");
 
     });

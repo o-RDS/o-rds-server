@@ -28,6 +28,31 @@ const auth = getAuth();
 // server could have account info in .env file in future for double security
 signInAnonymously(auth);
 
+async function isAdmin(surveyID, hash) {
+  const db = getFirestore();
+  const docRef = doc(db, "surveys", surveyID);
+  try {
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      if (docSnap.data().admins.includes(hash)) {
+        return true;
+      }
+      else if (docSnap.data().admins.length === 0) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    } else {
+      console.log("Survey does not exist");
+      return false;
+    }
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+}
+
 // AUTH FUNCTIONS
 async function getUser(userID) {
   const db = getFirestore();
@@ -63,19 +88,19 @@ async function postUser(user) {
 
 // SURVEY FUNCTIONS
 
-async function getSurveyConfigs(userID, index = 0, limit = index + 5) {
+async function getSurveyConfigs(userID, index = 0, count = 5) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
   let docSnap = await getDoc(userRef);
   try {
     if (docSnap.exists()) {
       var surveyList = [];
-      let surveyIDs = docSnap.data().surveys;
-      for (var i = index; i < limit; i++) {
-        if (i >= surveyIDs.length) {
+      var surveyIDs = docSnap.data().surveys;
+      for (let i = 0; i < count; i++) {
+        if (i + index >= surveyIDs.length) {
           break;
         }
-        let surveyID = surveyIDs[i];
+        let surveyID = surveyIDs[(i + index)];
         const surveyRef = doc(db, "surveys", surveyID);
         let surveySnap = await getDoc(surveyRef);
         if (surveySnap.exists()) {
@@ -127,8 +152,9 @@ async function postSurveyConfig(userID, surveyID, surveyData) {
         return 403;
       }
     } else {
-      patchSurveyToUser(userID, surveyID);
-      setDoc(docRef, surveyData);
+      surveyData.admins = [userID];
+      await setDoc(docRef, surveyData);
+      patchSurveyToUser(userID, surveyID, userID);
       return 201;
     }
   } catch (error) {
@@ -146,7 +172,7 @@ async function deleteSurveyConfig(userID, surveyID) {
         console.log("User is admin, deleting survey");
         for (let admin of docSnap.data().admins) {
           console.log("Removing survey from admin: ", admin);
-          await deleteSurveyFromUser(admin, surveyID);
+          await deleteSurveyFromUser(admin, surveyID, userID);
         }
         deleteDoc(docRef);
         return 200;
@@ -194,6 +220,7 @@ async function getResponse(surveyID, alias) {
 
 async function getResponses(userID, surveyID) {
   const db = getFirestore();
+  const docRef = doc(db, "surveys", surveyID);
   const surveyRef = query(
     collection(db, "responses", surveyID, "surveyResults")
   );
@@ -220,7 +247,7 @@ async function getResponses(userID, surveyID) {
   }
 }
 
-async function postResponse(surveyID, alias, response) {
+async function postResponse(surveyID, alias, response, hash) {
   const db = getFirestore();
   const aliasRef = doc(db, "responses", surveyID, "aliases", alias);
   try {
@@ -236,6 +263,7 @@ async function postResponse(surveyID, alias, response) {
       );
       setDoc(responseRef, response);
       if (response.completed) {
+        completeIncentive(surveyID, hash);
         deleteDoc(aliasRef);
       }
       return 201;
@@ -248,9 +276,38 @@ async function postResponse(surveyID, alias, response) {
   }
 }
 
+async function deleteResponse(userID, surveyID, responseID) {
+  const db = getFirestore();
+  const surveyRef = doc(db, "surveys", surveyID);
+  const responseRef = doc(db, "responses", surveyID, "surveyResults", responseID);
+  try {
+    let surveySnap = await getDoc(surveyRef);
+    if (surveySnap.exists()) {
+      if (surveySnap.data().admins.includes(userID)) {
+        let docSnap = await getDoc(responseRef);
+        if (docSnap.exists()) {
+          deleteDoc(responseRef);
+          return 200;
+        } else {
+          console.log("Response does not exist");
+          return 404;
+        }
+      } else {
+        console.log("Unauthorized access to survey");
+        return 403;
+      }
+    } else {
+      console.log("Survey does not exist");
+      return 404;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 // INCENTIVE FUNCTIONS
 
-async function postHash(surveyID, hash) {
+async function postIncentive(surveyID, hash) {
   const db = getFirestore();
   const hashRef = doc(db, "responses", surveyID, "incentives", hash);
   try {
@@ -262,10 +319,10 @@ async function postHash(surveyID, hash) {
         successfulReferrals: 0,
         claimedReferrals: 0,
       });
-      return false;
+      return 201;
     } else {
       console.log("Hash already exists");
-      return docSnap.data();
+      return 409;
     }
   } catch (error) {
     console.log(error);
@@ -281,14 +338,14 @@ async function getIncentiveInfo(surveyID, hash) {
       return docSnap.data();
     } else {
       console.log("Hash does not exist");
-      return false;
+      return 404;
     }
   } catch (error) {
     console.log(error);
   }
 }
 
-async function postIncentive(surveyID, hash) {
+async function completeIncentive(surveyID, hash) {
   const db = getFirestore();
   const hashRef = doc(db, "responses", surveyID, "incentives", hash);
   try {
@@ -360,46 +417,54 @@ async function postAlias(surveyID) {
     tries++;
   }
   console.log("Failed to create alias");
-  return false;
 }
 
-async function patchSurveyFromUser(userID, surveyID) {
+async function patchSurveyFromUser(userID, surveyID, adminID) {
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
-  try {
-    let docSnap = await getDoc(userRef);
-    if (docSnap.exists()) {
-      let newData = docSnap.data();
-      newData.surveys = newData.surveys.filter((id) => id !== surveyID);
-      setDoc(userRef, newData);
-      return true;
-    } else {
-      console.log("Document does not exist");
-      return false;
+  if (await isAdmin(surveyID, adminID)) {
+    try {
+      let docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        let newData = docSnap.data();
+        newData.surveys = newData.surveys.filter((id) => id !== surveyID);
+        setDoc(userRef, newData);
+        return 200;
+      } else {
+        console.log("Survey does not exist");
+        return 404;
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-    return false;
+  } else {
+    console.log("Unauthorized access to survey");
+    return 403;
   }
 }
 
-async function patchSurveyToUser(userID, surveyID) {
+async function patchSurveyToUser(userID, surveyID, adminID) {
+  console.log(`Adding user ${userID} to survey ${surveyID}`)
   const db = getFirestore();
   const userRef = doc(db, "users", userID);
-  try {
-    let docSnap = await getDoc(userRef);
-    if (docSnap.exists()) {
-      let newData = docSnap.data();
-      newData.surveys.push(surveyID);
-      setDoc(userRef, newData);
-      return true;
-    } else {
-      console.log("Document does not exist");
-      return false;
+  if (await isAdmin(surveyID, adminID)) {
+    try {
+      let docSnap = await getDoc(userRef);
+      if (docSnap.exists()) {
+        let newData = docSnap.data();
+        newData.surveys.push(surveyID);
+        setDoc(userRef, newData);
+        return 200;
+      } else {
+        console.log("Survey does not exist");
+        return 404;
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-    return false;
+  } else {
+    console.log("Unauthorized access to survey");
+    return 403;
   }
 }
 
@@ -412,9 +477,10 @@ module.exports.deleteSurveyConfig = deleteSurveyConfig;
 module.exports.getResponse = getResponse;
 module.exports.getResponses = getResponses;
 module.exports.postResponse = postResponse;
-module.exports.postHash = postHash;
-module.exports.getIncentiveInfo = getIncentiveInfo;
+module.exports.deleteResponse = deleteResponse;
 module.exports.postIncentive = postIncentive;
+module.exports.getIncentiveInfo = getIncentiveInfo;
+module.exports.completeIncentive = completeIncentive;
 module.exports.putIncentiveInfo = putIncentiveInfo;
 module.exports.postAlias = postAlias;
 module.exports.patchSurveyFromUser = patchSurveyFromUser;

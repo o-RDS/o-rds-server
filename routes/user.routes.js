@@ -6,13 +6,11 @@ const {
   getResponse,
   getResponses,
   postResponse,
-  postHash,
   getIncentiveInfo,
-  postIncentive,
-  putIncentiveInfo,
   postAlias,
   patchSurveyFromUser,
-  patchSurveyToUser
+  patchSurveyToUser,
+  postIncentive
 } = require('../database/firestoreFunctions.js');
 var express = require("express"),
   verifyAdminToken = require("../middlewares/admin.JWT.auth"),
@@ -45,45 +43,37 @@ router.post('/api/login', login, function (req, res) {
 
 // SURVEY ROUTES
 
-router.get("/api/survey", verifyToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID", async function (req, res) {
   //console.log(req.body);
-  if (req.body.surveyID == undefined) {
-    res.status(400)
+  let result = await getSurveyConfig(req.params.surveyID);
+  if (result == undefined) {
+    res.status(500)
       .send({
-        message: "Invalid request, missing surveyID"
+        message: "Internal Server Error"
       });
   }
-  else {
-    let result = await getSurveyConfig(req.body.surveyID);
-    if (result == undefined) {
-      res.status(500)
-        .send({
-          message: "Internal Server Error"
-        });
-    }
-    else if (result == 404) {
-      res.status(404)
-        .send({
-          message: "Survey does not exist"
-        });
-    } else {
-      res.status(200)
-        .send(
-          result
-        );
-    }
+  else if (result == 404) {
+    res.status(404)
+      .send({
+        message: "Survey does not exist"
+      });
+  } else {
+    res.status(200)
+      .send(
+        result
+      );
   }
 });
 
 router.get("/api/surveys", verifyAdminToken, gotJWT, async function (req, res) {
   if (req.body.user.role == "admin") {
-    if (req.body.index == undefined) {
-      req.body.index = 0;
+    if (req.query.index == undefined) {
+      req.query.index = 0;
     }
-    if (req.body.limit == undefined) {
-      req.body.limit = req.body.index + 5;
+    if (req.query.count == undefined) {
+      req.query.count = 5;
     }
-    let result = await getSurveyConfigs(req.body.user.email, req.body.index, req.body.limit);
+    let result = await getSurveyConfigs(req.body.user.email, parseInt(req.query.index), parseInt(req.query.count));
     if (result == undefined) {
       res.status(500)
         .send({
@@ -109,17 +99,17 @@ router.get("/api/surveys", verifyAdminToken, gotJWT, async function (req, res) {
   }
 });
 
-router.post("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
+router.post("/api/survey/:surveyID", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
   if (req.body.user.role == "admin") {
-    if (req.body.surveyID == undefined || req.body.surveyData == undefined) {
+    if (req.params.surveyID == undefined || req.body.surveyData == undefined) {
       res.status(400)
         .send({
           message: "Invalid request, missing surveyID or data"
         });
     }
     else {
-      let result = await postSurveyConfig(req.body.user.email, req.body.surveyID, req.body.surveyData);
+      let result = await postSurveyConfig(req.body.user.email, req.params.surveyID, req.body.surveyData);
       if (result == undefined) {
         res.status(500)
           .send({
@@ -147,17 +137,17 @@ router.post("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
   }
 });
 
-router.delete("/api/survey", verifyAdminToken, gotJWT, async function (req, res) {
+router.delete("/api/survey/:surveyID", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
   if (req.body.user.role == "admin") {
-    if (req.body.surveyID == undefined) {
+    if (req.params.surveyID == undefined) {
       res.status(400)
         .send({
           message: "Invalid request, missing surveyID"
         });
     }
     else {
-      let result = await deleteSurveyConfig(req.body.user.email, req.body.surveyID);
+      let result = await deleteSurveyConfig(req.body.user.email, req.params.surveyID);
       if (result == undefined) {
         res.status(500)
           .send({
@@ -193,16 +183,16 @@ router.delete("/api/survey", verifyAdminToken, gotJWT, async function (req, res)
 
 // RESPONSE ROUTES
 
-router.get("/api/response", verifySurveyToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID/response/:alias", verifySurveyToken, gotJWT, async function (req, res) {
   //console.log(req.body);
-  if (req.body.alias == undefined || req.body.surveyID == undefined) {
+  if (req.params.alias == undefined || req.params.surveyID == undefined) {
     res.status(400)
       .send({
         message: "Invalid request, missing alias or surveyID"
       });
   }
   else {
-    let result = await getResponse(req.body.surveyID, req.body.alias);
+    let result = await getResponse(req.params.surveyID, req.params.alias);
     if (result == undefined) {
       res.status(500)
         .send({
@@ -223,16 +213,16 @@ router.get("/api/response", verifySurveyToken, gotJWT, async function (req, res)
   }
 });
 
-router.get("/api/responses", verifyAdminToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID/responses", verifyAdminToken, gotJWT, async function (req, res) {
   //console.log(req.body);
-  if (req.body.surveyID == undefined) {
+  if (req.params.surveyID == undefined) {
     res.status(400)
       .send({
         message: "Invalid request, missing surveyID"
       });
   }
   else {
-    let result = await getResponses(req.body.user.email, req.body.surveyID);
+    let result = await getResponses(req.body.user.email, req.params.surveyID);
     if (result == undefined) {
       res.status(500)
         .send({
@@ -268,7 +258,7 @@ router.post("/api/response", verifySurveyToken, gotJWT, async function (req, res
       });
   }
   else {
-    let result = await postResponse(req.body.surveyID, req.body.alias, req.body.responseData);
+    let result = await postResponse(req.body.surveyID, req.body.alias, req.body.responseData, req.body.user.hash);
     if (result == undefined) {
       res.status(500)
         .send({
@@ -290,21 +280,98 @@ router.post("/api/response", verifySurveyToken, gotJWT, async function (req, res
 });
 
 router.delete("/api/response", verifyAdminToken, gotJWT, async function (req, res) {
-  //TODO
+  //console.log(req.body);
+  if (req.body.surveyID == undefined || req.body.responseID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID or responseID"
+      });
+  }
+  else {
+    let result = await deleteResponse(req.body.user.email, req.body.surveyID, req.body.alias);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 403) {
+      res.status(403)
+        .send({
+          message: "Unauthorized access, not your survey"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "Response or survey does not exist"
+        });
+    }
+    else {
+      res.status(200)
+        .send({
+          message: "Response deleted"
+        });
+    }
+  }
 });
 
 // INCENTIVE ROUTES
 
-router.post("/api/hash", verifySurveyToken, gotJWT, async function (req, res) {
-  //TODO
-});
-
-router.get("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
-  //TODO
-});
-
 router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
-  //TODO
+  if (req.body.surveyID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID"
+      });
+  }
+  else {
+    let result = await postIncentive(req.body.surveyID, req.body.user.hash);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 409) {
+      res.status(409)
+        .send({
+          message: "Hash already exists"
+        });
+    } else {
+      res.status(201)
+        .send({
+          message: "Hash created"
+        });
+    }
+  }
+});
+
+router.get("/api/survey/:surveyID/incentive", verifySurveyToken, gotJWT, async function (req, res) {
+  if (req.body.surveyID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID"
+      });
+  }
+  else {
+    let result = await getIncentiveInfo(req.body.surveyID, req.body.user.hash);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "Hash does not exist"
+        });
+    } else {
+      res.status(200)
+        .send(result);
+    }
+  }
 });
 
 router.put("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
@@ -314,15 +381,74 @@ router.put("/api/incentive", verifySurveyToken, gotJWT, async function (req, res
 // OTHER ROUTES
 
 router.post("/api/alias", verifySurveyToken, gotJWT, async function (req, res) {
-  //TODO
+  console.log(req.body);
+  if (req.body.surveyID == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID"
+      });
+  }
+  else {
+    let result = await postAlias(req.body.surveyID);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else {
+      res.status(201)
+        .send(result);
+    }
+  }
 });
 
 router.patch("/api/user-remove", verifyAdminToken, gotJWT, async function (req, res) {
-  //TODO
+  if (req.body.surveyID == undefined || req.body.email == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID or email"
+      });
+  }
+  else {
+    let result = await patchSurveyFromUser(req.body.email, req.body.surveyID);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "User or survey does not exist"
+        });
+    }
+  }
 });
 
 router.patch("/api/user-add", verifyAdminToken, gotJWT, async function (req, res) {
-  //TODO
+  if (req.body.surveyID == undefined || req.body.email == undefined) {
+    res.status(400)
+      .send({
+        message: "Invalid request, missing surveyID or email"
+      });
+  }
+  else {
+    let result = await patchSurveyToUser(req.body.email, req.body.surveyID);
+    if (result == undefined) {
+      res.status(500)
+        .send({
+          message: "Internal Server Error"
+        });
+    }
+    else if (result == 404) {
+      res.status(404)
+        .send({
+          message: "User or survey does not exist"
+        });
+    }
+  }
 });
 
 module.exports = router;
