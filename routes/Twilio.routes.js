@@ -3,9 +3,9 @@ var express = require("express"),
         verification,
         verificationCheck
     } = require("../controllers/survey.auth.controller")
-
 require("dotenv").config();
-import { apiLimiter } from "../middlewares/rateLimit";
+const { apiLimiter } = require("../middlewares/rateLimit");
+
 
 
 // will require rate limiting 
