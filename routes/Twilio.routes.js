@@ -3,16 +3,17 @@ var express = require("express"),
         verification,
         verificationCheck
     } = require("../controllers/survey.auth.controller")
-
 require("dotenv").config();
+const { apiLimiter } = require("../middlewares/rateLimit");
+
 
 
 // will require rate limiting 
-router.post('/api/twilio/verification', verification, (req, res) => {
+router.post('/api/twilio/verification', apiLimiter, verification, (req, res) => {
 
 });
 
-router.post('/api/twilio/verificationCheck', verificationCheck, (req, res) => {
+router.post('/api/twilio/verificationCheck', apiLimiter, verificationCheck, (req, res) => {
 
 });
 
