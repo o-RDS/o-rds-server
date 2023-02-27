@@ -20,7 +20,7 @@ const verifyAdminToken = (req, res, next) => {
         }
 
         // if valid, add user data onto req.body
-        if (decode != undefined) {
+        if (decode != undefined && decode.email != undefined) {
           user = await getUser(decode.email);
           if (user === undefined) {
             req.body.user = undefined;
@@ -33,6 +33,9 @@ const verifyAdminToken = (req, res, next) => {
             req.body.user = user;
             next();
           }
+        } else {
+          req.body.user = undefined;
+          next();
         }
       }
     );
