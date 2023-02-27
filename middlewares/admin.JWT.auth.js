@@ -14,28 +14,37 @@ const verifyAdminToken = (req, res, next) => {
       process.env.JWT_API_SECRET,
       async function (err, decode) {
         if (err) {
-          console.log(err);
-          req.body.user = undefined;
-          next();
+          console.log(req.ip + " JWT Malformed");
+          res.status(403)
+          .send({
+            message: "JWT Malformed"
+          });
         }
-
         // if valid, add user data onto req.body
-        if (decode != undefined && decode.email != undefined) {
+        else if (decode != undefined && decode.email != undefined) {
           user = await getUser(decode.email);
           if (user === undefined) {
-            req.body.user = undefined;
-            next();
+            console.log(req.ip + " Internal Server Error");
+            res.status(500)
+            .send({
+              message: "Internal Server Error"
+            });
           } else if (user === 404) {
-            console.log("User not found");
-            req.body.user = undefined;
-            next();
+            console.log(req.ip + " User not found");
+            res.status(404)
+            .send({
+              message: "User not found"
+            });
           } else {
             req.body.user = user;
             next();
           }
         } else {
-          req.body.user = undefined;
-          next();
+          console.log(req.ip + " Wrong Account Type")
+          res.status(403)
+          .send({
+            message: "Wrong Account Type"
+          });
         }
       }
     );

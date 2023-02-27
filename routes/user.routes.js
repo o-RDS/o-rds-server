@@ -21,18 +21,7 @@ router = express.Router(),
     register,
     login
   } = require("../controllers/admin.auth.controller");
-const { createAccountLimiter } =  require("../middlewares/rateLimit")
-
-function gotJWT(req, res, next) {
-  if (req.body.user == undefined) {
-    res.status(403)
-      .send({
-        message: "Invalid JWT token"
-      });
-  } else {
-    next();
-  }
-}
+const { createAccountLimiter } =  require("../middlewares/rateLimit");
 
 // AUTH ROUTES
 
@@ -66,7 +55,7 @@ router.get("/api/survey/:surveyID", async function (req, res) {
   }
 });
 
-router.get("/api/surveys", verifyAdminToken, gotJWT, async function (req, res) {
+router.get("/api/surveys", verifyAdminToken, async function (req, res) {
   console.log(req.ip + " GET /api/surveys")
   if (req.body.user.role == "admin") {
     if (req.query.index == undefined) {
@@ -101,7 +90,7 @@ router.get("/api/surveys", verifyAdminToken, gotJWT, async function (req, res) {
   }
 });
 
-router.post("/api/survey/:surveyID", verifyAdminToken, gotJWT, async function (req, res) {
+router.post("/api/survey/:surveyID", verifyAdminToken, async function (req, res) {
   console.log(req.ip + ` POST /api/survey/${req.params.surveyID}`)
   if (req.body.user.role == "admin") {
     if (req.params.surveyID == undefined || req.body.surveyData == undefined) {
@@ -139,7 +128,7 @@ router.post("/api/survey/:surveyID", verifyAdminToken, gotJWT, async function (r
   }
 });
 
-router.delete("/api/survey/:surveyID", verifyAdminToken, gotJWT, async function (req, res) {
+router.delete("/api/survey/:surveyID", verifyAdminToken, async function (req, res) {
   console.log(req.ip + ` DELETE /api/survey/${req.params.surveyID}`)
   if (req.body.user.role == "admin") {
     if (req.params.surveyID == undefined) {
@@ -185,7 +174,7 @@ router.delete("/api/survey/:surveyID", verifyAdminToken, gotJWT, async function 
 
 // RESPONSE ROUTES
 
-router.get("/api/survey/:surveyID/response/:alias", verifySurveyToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID/response/:alias", verifySurveyToken, async function (req, res) {
   console.log(req.ip + ` GET /api/survey/${req.params.surveyID}/response/${req.params.alias}`)
   if (req.params.alias == undefined || req.params.surveyID == undefined) {
     res.status(400)
@@ -215,7 +204,7 @@ router.get("/api/survey/:surveyID/response/:alias", verifySurveyToken, gotJWT, a
   }
 });
 
-router.get("/api/survey/:surveyID/responses", verifyAdminToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID/responses", verifyAdminToken, async function (req, res) {
   console.log(req.ip + ` GET /api/survey/${req.params.surveyID}/responses`)
   if (req.params.surveyID == undefined) {
     res.status(400)
@@ -251,7 +240,7 @@ router.get("/api/survey/:surveyID/responses", verifyAdminToken, gotJWT, async fu
   }
 });
 
-router.post("/api/response", verifySurveyToken, gotJWT, async function (req, res) {
+router.post("/api/response", verifySurveyToken, async function (req, res) {
   console.log(req.ip + ` POST /api/response`)
   if (req.body.surveyID == undefined || req.body.alias == undefined || req.body.responseData == undefined) {
     res.status(400)
@@ -281,7 +270,7 @@ router.post("/api/response", verifySurveyToken, gotJWT, async function (req, res
   }
 });
 
-router.delete("/api/response", verifyAdminToken, gotJWT, async function (req, res) {
+router.delete("/api/response", verifyAdminToken, async function (req, res) {
   console.log(req.ip + ` DELETE /api/response`)
   if (req.body.surveyID == undefined || req.body.responseID == undefined) {
     res.status(400)
@@ -320,7 +309,7 @@ router.delete("/api/response", verifyAdminToken, gotJWT, async function (req, re
 
 // INCENTIVE ROUTES
 
-router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
+router.post("/api/incentive", verifySurveyToken, async function (req, res) {
   console.log(req.ip + ` POST /api/incentive`)
   if (req.body.surveyID == undefined) {
     res.status(400)
@@ -350,7 +339,7 @@ router.post("/api/incentive", verifySurveyToken, gotJWT, async function (req, re
   }
 });
 
-router.get("/api/survey/:surveyID/incentive", verifySurveyToken, gotJWT, async function (req, res) {
+router.get("/api/survey/:surveyID/incentive", verifySurveyToken, async function (req, res) {
   console.log(req.ip + ` GET /api/survey/${req.params.surveyID}/incentive`)
   if (req.params.surveyID == undefined) {
     res.status(400)
@@ -378,13 +367,13 @@ router.get("/api/survey/:surveyID/incentive", verifySurveyToken, gotJWT, async f
   }
 });
 
-router.put("/api/incentive", verifySurveyToken, gotJWT, async function (req, res) {
+router.put("/api/incentive", verifySurveyToken, async function (req, res) {
   //TODO
 });
 
 // OTHER ROUTES
 
-router.post("/api/alias", verifySurveyToken, gotJWT, async function (req, res) {
+router.post("/api/alias", verifySurveyToken, async function (req, res) {
   console.log(req.ip + ` POST /api/alias`)
   if (req.body.surveyID == undefined) {
     res.status(400)
@@ -407,7 +396,7 @@ router.post("/api/alias", verifySurveyToken, gotJWT, async function (req, res) {
   }
 });
 
-router.patch("/api/user-remove", verifyAdminToken, gotJWT, async function (req, res) {
+router.patch("/api/user-remove", verifyAdminToken, async function (req, res) {
   console.log(req.ip + ` PATCH /api/user-remove`)
   if (req.body.surveyID == undefined || req.body.email == undefined) {
     res.status(400)
@@ -432,7 +421,7 @@ router.patch("/api/user-remove", verifyAdminToken, gotJWT, async function (req, 
   }
 });
 
-router.patch("/api/user-add", verifyAdminToken, gotJWT, async function (req, res) {
+router.patch("/api/user-add", verifyAdminToken, async function (req, res) {
   console.log(req.ip + ` PATCH /api/user-add`)
   if (req.body.surveyID == undefined || req.body.email == undefined) {
     res.status(400)
