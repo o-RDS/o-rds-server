@@ -15,8 +15,9 @@ const verifySurveyToken = (req, res, next) => {
       function (err, decode) {
         if (err) {
           console.log(req.ip + "JWT Malformed");
-          req.body.user = undefined;
-          next();
+          res.status(403).send({
+            message: "JWT Malformed",
+          });
         }
         // if valid, add user data onto req.body
         else {
@@ -24,16 +25,20 @@ const verifySurveyToken = (req, res, next) => {
             req.body.user = { hash: decode.hash };
             next();
           } else {
-            req.body.user = undefined;
-            next();
+            console.log(req.ip + " Wrong Account Type");
+            res.status(403).send({
+              message: "Wrong Account Type",
+            });
           }
         }
       }
     );
   } else {
-    // JWT not valid, req.body.surveyTaker gets undefined
-    req.body.user = undefined;
-    next();
+    // JWT not valid
+    console.log(req.ip + "JWT Malformed");
+    res.status(403).send({
+      message: "JWT Malformed",
+    });
   }
 };
 
