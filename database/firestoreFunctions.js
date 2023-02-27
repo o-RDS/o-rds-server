@@ -26,7 +26,11 @@ initializeApp(firebaseConfig);
 
 const auth = getAuth();
 // server could have account info in .env file in future for double security
-signInAnonymously(auth);
+signInAnonymously(auth).then((userCredential) => {
+  // Signed in..
+  const user = userCredential.user;
+  console.log("Firebase Ready");
+});
 
 async function isAdmin(surveyID, hash) {
   const db = getFirestore();
