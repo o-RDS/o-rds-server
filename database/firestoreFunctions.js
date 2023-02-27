@@ -172,7 +172,7 @@ async function deleteSurveyConfig(userID, surveyID) {
         console.log("User is admin, deleting survey");
         for (let admin of docSnap.data().admins) {
           console.log("Removing survey from admin: ", admin);
-          await deleteSurveyFromUser(admin, surveyID, userID);
+          await patchSurveyFromUser(admin, surveyID, userID);
         }
         deleteDoc(docRef);
         return 200;
