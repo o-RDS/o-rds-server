@@ -21,7 +21,7 @@ const verifySurveyToken = (req, res, next) => {
         }
         // if valid, add user data onto req.body
         else {
-          if (decode.hash === undefined) {
+          if (decode.hash !== undefined) {
             req.body.user = { hash: decode.hash };
             next();
           } else {

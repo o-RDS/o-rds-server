@@ -23,7 +23,7 @@ const verifyToken = (req, res, next) => {
           res.status(403).send({
             message: "Bad Account",
           });
-        } else if (decode.hash != undefined) {
+        } else if (decode.hash !== undefined) {
           req.body.user = { hash: decode.hash };
           next();
         } else {

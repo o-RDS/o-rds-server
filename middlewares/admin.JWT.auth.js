@@ -20,7 +20,7 @@ const verifyAdminToken = (req, res, next) => {
           });
         }
         // if valid, add user data onto req.body
-        else if (decode != undefined && decode.email != undefined) {
+        else if (decode !== undefined && decode.email !== undefined) {
           user = await getUser(decode.email);
           if (user === undefined) {
             console.log(req.ip + " Internal Server Error");
