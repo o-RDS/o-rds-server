@@ -34,23 +34,28 @@ exports.verification = (req, res) => {
 
     // send them their code
     if (TESTING != "true") {
-        client.messages
-            .create({ body: message, from: process.env.TWILIO_PHONE_NUMBER, to: to })
-            .then(message => {
-                if (message.error_code == null) { // message sent successfully
-                    saveUserToFolder(surveyTaker, function (err) {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send({ message: "Survey taker not saved." });
-                            return;
-                        }
-                        res.status(200).send({ message: "Survey taker registered successfully. Verification code has been sent." });
-                        console.log("New survey taker registered");
-                    })
-                } else { // Twilio error
-                    res.status(500).send({ message: message.error_message });
-                }
-            });
+        try {
+            client.messages
+                .create({ body: message, from: process.env.TWILIO_PHONE_NUMBER, to: to })
+                .then(message => {
+                    if (message.error_code == null) { // message sent successfully
+                        saveUserToFolder(surveyTaker, function (err) {
+                            if (err) {
+                                console.log(err);
+                                res.status(500).send({ message: "Survey taker not saved." });
+                                return;
+                            }
+                            res.status(200).send({ message: "Survey taker registered successfully. Verification code has been sent." });
+                            console.log("New survey taker registered");
+                        })
+                    } else { // Twilio error
+                        res.status(500).send({ message: message.error_message });
+                    }
+                });
+        } catch (error) {
+            console.log(error);
+            res.status(500).send({ message: "Twilio message error.", error: error })
+        }
     } else {
         console.log("Verification in TESTING MODE")
         saveUserToFolder(surveyTaker, function (err) {
