@@ -7,6 +7,7 @@ require("dotenv").config();
 
 const app = express()
 
+app.enable('trust proxy')
 app.set('x-powered-by' , 'Express.js');
 app.use(cors());
 app.use(express.json());
