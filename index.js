@@ -26,8 +26,7 @@ app.use((err, req, res, next) => {
 app.use((req, res) => {
     console.log(req.url);
     res.status(400).send({
-        message: "Error: not allowed.",
-        method: req.method
+        message: "Error: not allowed."
     });
 });
 
