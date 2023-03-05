@@ -432,6 +432,62 @@ async function parentExists(surveyID, hash) {
   }
 }
 
+async function claimCompletionIncentive(surveyID, hash) {
+  const db = getFirestore();
+  const hashRef = doc(db, "responses", surveyID, "incentives", hash);
+  const surveyRef = doc(db, "surveys", surveyID);
+  try {
+    let docSnap = await getDoc(hashRef);
+    let surveySnap = await getDoc(surveyRef);
+    if (!docSnap.exists() || !surveySnap.exists()) {
+      console.log("Hash or survey does not exist");
+      throw new Error("Hash or survey does not exist")
+    }
+    let currentData = docSnap.data();
+    let surveyConfig = surveySnap.data();
+    if (currentData.isComplete && !currentData.completionClaimed) {
+      currentData.completionClaimed = true;
+      setDoc(hashRef, currentData);
+      return surveyConfig.completionIncentive;
+    }
+    throw new Error("Incentive is not complete or has already been claimed");
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function claimReferralIncentive(surveyID, hash) {
+  const db = getFirestore();
+  const hashRef = doc(db, "responses", surveyID, "incentives", hash);
+  const surveyRef = doc(db, "surveys", surveyID);
+  try {
+    let docSnap = await getDoc(hashRef);
+    let surveySnap = await getDoc(surveyRef);
+    if (!docSnap.exists() || !surveySnap.exists()) {
+      console.log("Hash does not exist");
+      throw new Error("Hash does not exist");
+    }
+    let currentData = docSnap.data();
+    let surveyConfig = surveySnap.data();
+    if (
+      currentData.isComplete &&
+      currentData.successfulReferrals > currentData.claimedReferrals &&
+      currentData.claimedReferrals < surveyConfig.maxPaidRefs
+    ) {
+      let totalPayable = currentData.successfulReferrals < surveyConfig.maxPaidRefs ? currentData.successfulReferrals : surveyConfig.maxPaidRefs;
+      let numToPay = totalPayable - currentData.claimedReferrals;
+      let amountToPay = numToPay * surveyConfig.referralAmount;
+      currentData.claimedReferrals += numToPay;
+      setDoc(hashRef, currentData);
+      return amountToPay;
+    } else {
+      throw new Error("No incentives claimable");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 // OTHER FUNCTIONS
 
 async function postAlias(surveyID) {
@@ -514,7 +570,8 @@ module.exports.deleteResponse = deleteResponse;
 module.exports.postIncentive = postIncentive;
 module.exports.getIncentiveInfo = getIncentiveInfo;
 module.exports.completeIncentive = completeIncentive;
-module.exports.putIncentiveInfo = putIncentiveInfo;
+module.exports.claimCompletionIncentive = claimCompletionIncentive;
+module.exports.claimReferralIncentive = claimReferralIncentive;
 module.exports.postAlias = postAlias;
 module.exports.patchSurveyFromUser = patchSurveyFromUser;
 module.exports.patchSurveyToUser = patchSurveyToUser;
