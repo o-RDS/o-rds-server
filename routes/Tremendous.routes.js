@@ -4,8 +4,12 @@ verifySurveyToken = require("../middlewares/survey.JWT.auth");
 verifyAdminToken = require("../middlewares/admin.JWT.auth");
 const fetch = (...args) =>
 	import('node-fetch').then(({default: fetch}) => fetch(...args));
-
+const {
+  claimCompletionIncentive,
+  claimReferralIncentive
+} = require("../database/firestoreFunctions");
 require("dotenv").config();
+
 
 function gotJWT(req, res, next) {
     if (req.body.user == undefined) {
@@ -69,7 +73,7 @@ router.get('/api/tremendous/listFundingSources', verifyAdminToken, gotJWT, (req,
 
 });
 
-
+/*
 router.post('/api/tremendous/sendPayment', verifySurveyToken, gotJWT, (req, res) => {
 
     console.log("forwarding to tremendous.com/api/v2/orders");
@@ -114,17 +118,24 @@ router.post('/api/tremendous/sendPayment', verifySurveyToken, gotJWT, (req, res)
             res.status(500).send(err);
         });
 });
+*/
 
-
-router.post('/api/tremendous/sendPayment/:mode', verifySurveyToken, gotJWT, (req, res) => {
+router.post('/api/survey/:surveyID/sendPayment/:mode', verifySurveyToken, gotJWT, async (req, res) => {
+  var amountToPay;
   if (req.params.mode == 'complete') {
     // TODO verify that the user has completed the survey and not claimed the reward
+    amountToPay = await claimCompletionIncentive(req.params.surveyID, req.body.user.email);
   }
   else if (req.params.mode == 'referral') {
     // TODO verify that the user has more referrals waiting to be claimed
+    amountToPay = await claimReferralIncentive(req.params.surveyID, req.body.user.email);
   }
   else {
     res.status(400).send({message: "Invalid mode"});
+    return;
+  }
+  if (amountToPay === undefined) {
+    res.status(400).send({message: "Unable to claim reward"});
     return;
   }
 
@@ -144,7 +155,7 @@ router.post('/api/tremendous/sendPayment/:mode', verifySurveyToken, gotJWT, (req
           {
               campaign_id: req.body.campaign_id, 
               products: req.body.products,
-              value: {denomination: req.body.denomination, currency_code: 'USD'},
+              value: {denomination: amountToPay, currency_code: 'USD'},
               recipient: {name: req.body.recipient.name, email: req.body.recipient.email},
               delivery: {method: req.body.method}
           }
