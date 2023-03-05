@@ -115,4 +115,58 @@ router.post('/api/tremendous/sendPayment', verifySurveyToken, gotJWT, (req, res)
         });
 });
 
+
+router.post('/api/tremendous/sendPayment/:mode', verifySurveyToken, gotJWT, (req, res) => {
+  if (req.params.mode == 'complete') {
+    // TODO verify that the user has completed the survey and not claimed the reward
+  }
+  else if (req.params.mode == 'referral') {
+    // TODO verify that the user has more referrals waiting to be claimed
+  }
+  else {
+    res.status(400).send({message: "Invalid mode"});
+    return;
+  }
+
+  console.log("forwarding to tremendous.com/api/v2/orders");
+
+  const options = {
+      method: 'POST',
+      headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          Authorization: "Bearer " + process.env.TREMENDOUS_BEARER_TOKEN
+      },
+      body: JSON.stringify({
+          external_id: req.body.external_id, 
+          payment: {funding_source_id: req.body.funding_source_id, channel: 'UI'},
+          rewards: [
+          {
+              campaign_id: req.body.campaign_id, 
+              products: req.body.products,
+              value: {denomination: req.body.denomination, currency_code: 'USD'},
+              recipient: {name: req.body.recipient.name, email: req.body.recipient.email},
+              delivery: {method: req.body.method}
+          }
+          ]
+      })
+    };
+    fetch('https://testflight.tremendous.com/api/v2/orders', options)
+      .then(response => response.json())
+      .then(response => {
+          res.status(200).send({
+              status: response.order.status,
+              created_at: response.order.created_at,
+              payment: {
+                  subtotal: response.order.payment.subtotal,
+                  total: response.order.payment.total,
+                  fees: response.order.payment.fees
+              }
+          });
+      })
+      .catch(err => {
+          console.error(err);
+          res.status(500).send(err);
+      });
+});
 module.exports = router;
