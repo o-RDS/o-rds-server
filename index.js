@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require('cors');
+const helmet = require("helmet");
 const tremendousRoutes = require("./routes/Tremendous.routes"),
     twilioRoutes = require("./routes/Twilio.routes"),
     userRoutes = require("./routes/user.routes");
@@ -11,6 +12,9 @@ app.enable('trust proxy')
 app.set('x-powered-by' , 'Express.js');
 app.use(cors());
 app.use(express.json());
+
+// https://www.npmjs.com/package/helmet
+app.use(helmet());
 
 app.use(tremendousRoutes);
 app.use(twilioRoutes);
