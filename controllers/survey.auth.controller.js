@@ -77,7 +77,7 @@ exports.verification = (req, res) => {
 exports.verificationCheck = (req, res) => {
     // hash the phone number
     const hash = crypto.createHash('sha256').update(req.body.to).digest('base64');
-    const cleanHash = hash.replaceAll('\\', 'x').replaceAll('/', 'y')
+    const cleanHash = hash.replaceAll('\\', 'x').replaceAll('/', 'y').replaceAll('+', 'z')
     fs.readFile(`./survey.data/${cleanHash}.json`, (err, data) => {
         if (err) {
             console.log(err);
