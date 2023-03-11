@@ -15,7 +15,7 @@ exports.verification = (req, res) => {
 
     // hash the phone number
     const hash = crypto.createHash('sha256').update(to).digest('base64');
-    const cleanHash = hash.replaceAll('\\', 'x').replaceAll('/', 'y');
+    const cleanHash = hash.replaceAll('\\', 'x').replaceAll('/', 'y').replaceAll('+', 'z');
     console.log(cleanHash)
 
     // create code and message
