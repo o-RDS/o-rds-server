@@ -262,10 +262,28 @@ router.post("/api/response", verifySurveyToken, async function (req, res) {
         .send({
           message: "Survey or alias does not exist"
         });
-    } else {
+    }
+    else if (result == 409) {
+      res.status(409)
+        .send({
+          message: "Referral Link At Max Uses"
+        });
+    }
+    else if (result == 403) {
+      res.status(403)
+        .send({
+          message: "Referer has not completed survey"
+        });
+    }
+    else if (result == 201) {
       res.status(201)
         .send({
           message: "Response created or overwritten"
+        });
+    } else {
+      res.status(500)
+        .send({
+          message: "Server Error"
         });
     }
   }

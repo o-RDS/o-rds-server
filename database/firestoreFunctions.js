@@ -404,7 +404,7 @@ async function completeReferral(surveyID, parentHash) {
     let surveyConfig = surveySnap.data();
     if (!parentData.isComplete) {
       console.log("Parent incentive is incomplete");
-      return 409;
+      return 403;
     }
     if (parentData.successfulReferrals < surveyConfig.maxRefs) {
       parentData.successfulReferrals += 1;
