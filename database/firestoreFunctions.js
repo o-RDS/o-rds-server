@@ -250,6 +250,7 @@ async function getResponses(userID, surveyID) {
 }
 
 async function postResponse(surveyID, alias, response, hash) {
+  console.log(response)
   const db = getFirestore();
   const aliasRef = doc(db, "responses", surveyID, "aliases", alias);
   try {
@@ -267,17 +268,17 @@ async function postResponse(surveyID, alias, response, hash) {
       responseID
     );
     if (response.completed) {
-      let refStatus = await completeReferral(surveyID, hash);
-      if (refStatus === 201) {
-        await completeIncentive(surveyID, hash);
-        deleteDoc(aliasRef);
-        setDoc(responseRef, response);
-      } else {
-        return refStatus;
+      console.log("Submitting Survey")
+      let incentiveStatus = await completeIncentive(surveyID, hash);
+      if (incentiveStatus !== 201) {
+        console.log("Failed to complete incentive");
+        return incentiveStatus;
       }
+      deleteDoc(aliasRef);
     } else {
-      setDoc(responseRef, response);
+      console.log("Saving Survey")
     }
+    setDoc(responseRef, response);
     return 201;
   } catch (error) {
     console.log(error);
@@ -336,7 +337,7 @@ async function postIncentive(surveyID, hash) {
       return 201;
     } else {
       console.log("Hash already exists");
-      return 409;
+      return docSnap.data()
     }
   } catch (error) {
     console.log(error);
@@ -366,20 +367,23 @@ async function completeIncentive(surveyID, hash, parentHash = "root") {
     let docSnap = await getDoc(hashRef);
     if (!docSnap.exists()) {
       console.log("Hash does not exist");
-      return false;
+      return 404;
     }
     let currentData = docSnap.data();
     if (!currentData.isComplete) {
       if (parentHash !== "root") {
+        console.log("Parent hash: " + parentHash)
         code = await completeReferral(surveyID, parentHash);
-        if (code !== 200) {
+        console.log("Complete Incentive: " + code)
+        if (code !== 201) {
+          console.log("Referral not completed")
           return code;
         }
       }
       currentData.isComplete = true;
       setDoc(hashRef, currentData);
     }
-    return true;
+    return 201;
   } catch (error) {
     console.log(error);
   }
@@ -405,8 +409,10 @@ async function completeReferral(surveyID, parentHash) {
     if (parentData.successfulReferrals < surveyConfig.maxRefs) {
       parentData.successfulReferrals += 1;
       await setDoc(hashRef, parentData);
+      console.log("Referral completed");
       return 201;
     }
+    console.log("Parent maxed out referrals");
     return 409;
   } catch (error) {
     console.log(error);

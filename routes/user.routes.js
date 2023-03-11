@@ -250,6 +250,7 @@ router.post("/api/response", verifySurveyToken, async function (req, res) {
   }
   else {
     let result = await postResponse(req.body.surveyID, req.body.alias, req.body.responseData, req.body.user.hash);
+    console.log("Response Post: " + result)
     if (result == undefined) {
       res.status(500)
         .send({
@@ -325,16 +326,15 @@ router.post("/api/incentive", verifySurveyToken, async function (req, res) {
           message: "Internal Server Error"
         });
     }
-    else if (result == 409) {
-      res.status(409)
-        .send({
-          message: "Hash already exists"
-        });
-    } else {
+    else if (result == 201) {
       res.status(201)
         .send({
           message: "Hash created"
         });
+    }
+    else {
+      res.status(409)
+        .send(result);
     }
   }
 });
