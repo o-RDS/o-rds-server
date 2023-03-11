@@ -249,7 +249,7 @@ router.post("/api/response", verifySurveyToken, async function (req, res) {
       });
   }
   else {
-    let result = await postResponse(req.body.surveyID, req.body.alias, req.body.responseData, req.body.user.hash);
+    let result = await postResponse(req.body.surveyID, req.body.alias, req.body.responseData, req.body.user.hash, req.body.parentHash);
     console.log("Response Post: " + result)
     if (result == undefined) {
       res.status(500)

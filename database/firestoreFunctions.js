@@ -249,7 +249,7 @@ async function getResponses(userID, surveyID) {
   }
 }
 
-async function postResponse(surveyID, alias, response, hash) {
+async function postResponse(surveyID, alias, response, hash, parentHash) {
   console.log(response)
   const db = getFirestore();
   const aliasRef = doc(db, "responses", surveyID, "aliases", alias);
@@ -269,7 +269,7 @@ async function postResponse(surveyID, alias, response, hash) {
     );
     if (response.completed) {
       console.log("Submitting Survey")
-      let incentiveStatus = await completeIncentive(surveyID, hash);
+      let incentiveStatus = await completeIncentive(surveyID, hash, parentHash);
       if (incentiveStatus !== 201) {
         console.log("Failed to complete incentive");
         return incentiveStatus;
