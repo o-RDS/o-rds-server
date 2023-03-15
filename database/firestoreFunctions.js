@@ -147,13 +147,14 @@ async function postSurveyConfig(userID, surveyID, surveyData) {
         surveyData.lastUpdated = new Date().toLocaleString("en-US", {
           timeZone: "CST",
         });
-        setDoc(docRef, surveyData);
+        await setDoc(docRef, surveyData);
         return 201;
       } else {
         console.log("Unauthorized access to survey");
         return 403;
       }
     } else {
+      console.log(`Survey is new, creating new survey for ${userID}`);
       surveyData.admins = [userID];
       await setDoc(docRef, surveyData);
       patchSurveyToUser(userID, surveyID, userID);
