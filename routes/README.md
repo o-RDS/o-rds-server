@@ -8,8 +8,6 @@ For mobile phone verification, o-RDS currently supports:
 
     Twilio
 
-// TODO: talk about how we hope to introduce more methods in the future
-
 Below is a step-by-step guide detailiing how to setup o-RDS to work your selected payout and phone verification methods. 
 
 # Tremendous Step 0: Create an Account
