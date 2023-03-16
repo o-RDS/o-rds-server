@@ -38,7 +38,7 @@ Bearer tokens are what Tremendous uses to authorize API calls. It is important t
 
 # Tremendous Step 4: Set Up Environment Variables
 
-Environment variables are used to keep secrets from being used as plaintext within the codebase. Envrionment files contain the key-value pairs that are associated with the secrets that need to be used in the code. o-RDS provides an empty environment variable file with only the keys ([.env.development](../.env.development)), and all you need to do is get your values and fill out the file. Once .env.development is filled out with values, rename it to "**.env**" and gitignore will automatically ignore it upon your next commit. 
+Environment variables are used to keep secrets from being used as plaintext within the codebase. Envrionment files contain the key-value pairs that are associated with the secrets that need to be used in the code. o-RDS provides an empty environment variable file with only the keys ([.env.development](../.env.development)), and all you need to do is get your values and fill out the file. Once .env.development is filled out with values, change the name to "**.env**" and gitignore will ignore it upon the next commit. 
 
 In the case of Tremendous, the only values required in the .env file are: 
 
@@ -48,12 +48,38 @@ and
 
     TREMENDOUS_SERVER=https://testflight.tremendous.com
 
-**Notice** how SERVER is set to the testflight URL. Once you're ready to switch to production, simply change this to Tremendous's URL to: **https://www.tremendous.com**
+**Notice** how SERVER is set to the testflight URL. Once you're ready to switch to production, simply change this to Tremendous's URL to: https://www.tremendous.com
 
 Where you decide to host this server will change how you handle these environment variables in a production setting. For o-RDS's original testing, we hosted on [Railway](https://railway.app/). Sites like this and many others provide a place for you input the same key-value pairs that are used in your environment files. In Railway, for example, these are called "[Variables](https://docs.railway.app/develop/variables)". 
 
 ### Note
 These docs outline how to get a Tremendous account working with o-RDS. For detailed information on how Tremendous's API endpoints work, such as the ones that are being used in this server, please refer to the [Tremendous Developer Docs](https://developers.tremendous.com/docs/introduction).
 
-# Twilio Step 0: Create an account
+# Twilio Step 0: Create an Account
 
+Go to [Twilio.com](https://www.twilio.com/?g=%2F) and create your account. Once you've verified your email and phone number, you'll end up at Twilio's console (below). Here you'll find your Account SID and Auth Token. You'll need these in the following steps. 
+
+![Twilio Console](../photos/Twilio_Console.jpg "Twilio Console")
+
+# Twilio Step 1: Buy a Twilio Phone Number
+
+o-RDS does not use Twilio's verification service. Instead, we use a phone number and send verification texts on our own. You'll need to purchase a phone number with Twilio. To do this, follow the steps below. 
+
+![Twilio Phone Number](../photos/Twilio_Phone_Number.jpg "Twilio Phone Number")
+
+![Twilio Phone Number 2](../photos/Twilio_Phone_Number_2.jpg "Twilio Phone Number 2")
+
+Take a note of the phone number you choose, as you'll need this is setting up your environment variables (step 2).
+
+# Twilio Step 2: Set Up Environment Variables 
+
+Similar to Tremendous step 4, we are now ready to set up our environment variables. This time there are 4:
+
+    TWILIO_AUTH_TOKEN=
+    TWILIO_ACCOUNT_SID=
+    TWILIO_PHONE_NUMBER=
+    TWILIO_SERVER=https://verify.twilio.com
+
+Unlike Tremendous, we don't need to worry about different server URLs for dev vs production, but we have it here for consistency. 
+
+We have provided a blank environment file ([.env.development](../.env.development)) which has all the necessary keys, but just needs the values. Once you've filled out all the neceesary fields, change the name to "**.env**" and gitignore will ignore it upon the next commit. 
