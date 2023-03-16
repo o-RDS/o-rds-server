@@ -69,7 +69,7 @@ o-RDS does not use Twilio's verification service. Instead, we use a phone number
 
 ![Twilio Phone Number 2](../photos/Twilio_Phone_Number_2.jpg "Twilio Phone Number 2")
 
-Take a note of the phone number you choose, as you'll need this is setting up your environment variables (step 2).
+Take a note of the phone number you choose, as you'll need this in setting up your environment variables (step 2).
 
 # Twilio Step 2: Set Up Environment Variables 
 
@@ -80,6 +80,6 @@ Similar to Tremendous step 4, we are now ready to set up our environment variabl
     TWILIO_PHONE_NUMBER=
     TWILIO_SERVER=https://verify.twilio.com
 
-Unlike Tremendous, we don't need to worry about different server URLs for dev vs production, but we have it here for consistency. 
+Unlike Tremendous, we don't need to worry about different server URLs for dev vs production, but it's here for consistency. 
 
 We have provided a blank environment file ([.env.development](../.env.development)) which has all the necessary keys, but just needs the values. Once you've filled out all the neceesary fields, change the name to "**.env**" and gitignore will ignore it upon the next commit. 
