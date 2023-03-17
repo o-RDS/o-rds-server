@@ -26,9 +26,11 @@ const { createAccountLimiter } =  require("../middlewares/rateLimit");
 // AUTH ROUTES
 
 router.post("/api/register", createAccountLimiter, register, function (req, res) {
+  console.log(req.ip ` POST /api/register`)
 });
 
 router.post('/api/login', login, function (req, res) {
+  console.log(req.ip ` POST /api/login`)
 });
 
 // SURVEY ROUTES

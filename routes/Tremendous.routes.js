@@ -23,8 +23,7 @@ function gotJWT(req, res, next) {
   }
 
 router.get('/api/tremendous/listCampaigns', verifyAdminToken, gotJWT, (req, res) => {
-
-    console.log("forwarding to tremendous.com/api/v2/campaigns");
+    console.log(req.ip + ` GET /api/tremendous/listCampaigns`);
 
     const options = {
         method: 'GET',
@@ -49,8 +48,7 @@ router.get('/api/tremendous/listCampaigns', verifyAdminToken, gotJWT, (req, res)
 
 
 router.get('/api/tremendous/listFundingSources', verifyAdminToken, gotJWT, (req, res) => {
-
-    console.log("forwarding to tremendous.com/api/v2/funding_sources");
+    console.log(req.ip + ` GET /api/tremendous/listFundingSources`);
 
     const options = {
         method: 'GET',
@@ -121,6 +119,8 @@ router.post('/api/tremendous/sendPayment', verifySurveyToken, gotJWT, (req, res)
 */
 
 router.post('/api/survey/:surveyID/sendPayment/:mode', verifySurveyToken, gotJWT, async (req, res) => {
+  console.log(req.ip + ` POST /api/survey/${req.params.surveyID}/sendPayment/${req.params.mode}`);
+
   var amountToPay;
   if (req.params.mode == 'complete') {
     // TODO verify that the user has completed the survey and not claimed the reward
@@ -138,8 +138,6 @@ router.post('/api/survey/:surveyID/sendPayment/:mode', verifySurveyToken, gotJWT
     res.status(400).send({message: "Unable to claim reward"});
     return;
   }
-
-  console.log("forwarding to tremendous.com/api/v2/orders");
 
   const options = {
       method: 'POST',
