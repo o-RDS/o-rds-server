@@ -455,7 +455,7 @@ async function claimCompletionIncentive(surveyID, hash) {
     if (currentData.isComplete && !currentData.completionClaimed) {
       currentData.completionClaimed = true;
       setDoc(hashRef, currentData);
-      return surveyConfig.completionIncentive;
+      return surveyConfig.completionPayout;
     }
     throw new Error("Incentive is not complete or has already been claimed");
   } catch (error) {
@@ -483,7 +483,7 @@ async function claimReferralIncentive(surveyID, hash) {
     ) {
       let totalPayable = currentData.successfulReferrals < surveyConfig.maxPaidRefs ? currentData.successfulReferrals : surveyConfig.maxPaidRefs;
       let numToPay = totalPayable - currentData.claimedReferrals;
-      let amountToPay = numToPay * surveyConfig.referralAmount;
+      let amountToPay = numToPay * surveyConfig.refPayout;
       currentData.claimedReferrals += numToPay;
       setDoc(hashRef, currentData);
       return amountToPay;

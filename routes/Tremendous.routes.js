@@ -124,11 +124,11 @@ router.post('/api/survey/:surveyID/sendPayment/:mode', verifySurveyToken, gotJWT
   var amountToPay;
   if (req.params.mode == 'complete') {
     // TODO verify that the user has completed the survey and not claimed the reward
-    amountToPay = await claimCompletionIncentive(req.params.surveyID, req.body.user.email);
+    amountToPay = await claimCompletionIncentive(req.params.surveyID, req.body.user.hash);
   }
   else if (req.params.mode == 'referral') {
     // TODO verify that the user has more referrals waiting to be claimed
-    amountToPay = await claimReferralIncentive(req.params.surveyID, req.body.user.email);
+    amountToPay = await claimReferralIncentive(req.params.surveyID, req.body.user.hash);
   }
   else {
     res.status(400).send({message: "Invalid mode"});
@@ -147,12 +147,10 @@ router.post('/api/survey/:surveyID/sendPayment/:mode', verifySurveyToken, gotJWT
           Authorization: "Bearer " + process.env.TREMENDOUS_BEARER_TOKEN
       },
       body: JSON.stringify({
-          external_id: req.body.external_id, 
           payment: {funding_source_id: req.body.funding_source_id, channel: 'UI'},
           rewards: [
           {
               campaign_id: req.body.campaign_id, 
-              products: req.body.products,
               value: {denomination: amountToPay, currency_code: 'USD'},
               recipient: {name: req.body.recipient.name, email: req.body.recipient.email},
               delivery: {method: req.body.method}
