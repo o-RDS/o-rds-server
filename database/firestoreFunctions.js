@@ -479,9 +479,9 @@ async function claimReferralIncentive(surveyID, hash) {
     if (
       currentData.isComplete &&
       currentData.successfulReferrals > currentData.claimedReferrals &&
-      currentData.claimedReferrals < surveyConfig.maxPaidRefs
+      currentData.claimedReferrals < surveyConfig.maxRefIncentives
     ) {
-      let totalPayable = currentData.successfulReferrals < surveyConfig.maxPaidRefs ? currentData.successfulReferrals : surveyConfig.maxPaidRefs;
+      let totalPayable = currentData.successfulReferrals < surveyConfig.maxRefIncentives ? currentData.successfulReferrals : surveyConfig.maxRefIncentives;
       let numToPay = totalPayable - currentData.claimedReferrals;
       let amountToPay = numToPay * surveyConfig.refPayout;
       currentData.claimedReferrals += numToPay;
