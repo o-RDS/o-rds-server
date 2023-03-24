@@ -1,134 +1,37 @@
 # o-RDS Proxy Server
 
-This is the proxy server for the [o-RDS web app client](https://github.com/o-RDS/o-rds-web-app). This server is meant to provide integrity and confidentiality to both our our users' data and API secrets. o-RDS requires the use of two services: Twilio and Tremendous, as well as a database and hosting service of choice. 
+This is the proxy server for the [o-RDS web app client](https://github.com/o-RDS/o-rds-web-app). This server is meant to provide integrity and confidentiality to both user data and to the API secrets. 
 
 
-We've set up this server to handle all of its data locally. Admin accounts from the web client are saved in the folder admin.data, and survey taker information is saved in the folder survey.data. The reason this data is being saved locally, as opposed to being saved to a database, is because we do not want to enforce a storage service upon anyone who wants to use o-RDS for their own research purposes. 
+### Authentication and Authorization
+This server uses admin and survey taker data as a way of signing and verifying JWTs (JSON web tokens), so we can be sure the people trying to access our endpoints are properly authorized/verified users. For admins we save their email and password ([salted and hashed](./controllers/admin.auth.controller.js)), while for survey takers we save their phone number and the 6-digit code that was texted to them ([hashed with SHA256](./controllers//survey.auth.controller.js)).
 
 
-Admin and survey taker data is used as a way of signing and verifying JWTs (JSON web tokens), so we can be sure the people trying to access our endpoints are only properly authorized users. For admin we save their email and password ([salted and hashed](./controllers/admin.auth.controller.js)), while for survey takers we save their phone number and the code that was sent to them ([hashed with SHA256](./controllers//survey.auth.controller.js)).
+# Setup Checklist
+
+### 1: Set up incentive payment and phone verification service accounts
+The current version of o-RDS utilizes two services for this process: Tremendous for incentive payments, and Twilio for phone verification. It will require anyone who wants their own version of o-RDS to create accounts with these services, and configure their API keys to work with this server. 
+
+[Use our separate docs on how to set up these accounts](./routes), then return here. 
+
+### 2: Set up the database 
 
 
-# How to start
+### 3: Configure .env file
+A .env file contains a list of key-value pairs which can be used as variables within the code, in order to prevent the use of API secrets as plaintext. We have provided a .env.development file with only keys, so you can fill them out with your own specific values.
 
-    npm start
+**Be sure to add .env.development to your .gitignore (or simply rename it to '.env'), so your keys are not visible on your own repository.**
 
-
-# How to set up
-
-We have provided a .env file with the same keys which we have used in our development. Once you have set up an account and services with [Tremendous](https://www.tremendous.com/) and [Twilio](https://www.twilio.com/), simply fill in the values that are left empty in the .env file. Afterwards be sure to update .gitignore so these values are not tracked in your own repository. 
+### 4: Startup/Deploying
 
 
-Both Twilio and Tremendous have ways of testing their services for free. We have utilized these heavily in our development, and we suggest others to do the same when setting up their own respondent driven sampling service. Twilio will give anyone $15 for free to test their services. For us, this was more than enough for months of testing. Tremendous provides a wonderful service called "testflight" in which you can test and develop for free with fake money. 
+### 5: Moving to a production environment
+There may be a number of settings/variables in the .envf file that are set a specific way during development/testing. Use the checklist below once you're ready to move to a production envrionment. 
 
+1. TESTING=false
+2. TREMENDOUS_BEARER_TOKEN and TREMENDOUS_SERVER shoud not be using the testflight environment
+3. If you were using a free Twilio account, switch over keys and phone number to the paid account
+4. Though not necessary, it is a good idea to generate a new JWT_API_SECRET
 
-Once you're ready to switch to production and utilize both of these services with real money, simply update your .env file (or have a second one. Ex: .env.production) with the new keys and with the production Tremendous server URL. 
-
-
-# [Endpoints](./routes)
-
-## Tremendous
-
-### GET: /tremendous/listCampaigns
-
-Proxy endpoint for the [Tremendous API](https://developers.tremendous.com/reference/core-campaigns-index). Takes in the user information from the web client and a valid JWT authorization header to verify the request. 
-
-Authorization header:
-
-```
-JWT {{"token"}}
-```
-
-### GET: /tremendous/listFundingSources
-
-Proxy endpoint for the [Tremendous API](https://developers.tremendous.com/reference/core-funding-source-index). Takes in the user information from the web client and a valid JWT authorization header to verify the request. 
-
-Authorization header:
-
-```
-JWT {{"token"}}
-```
-
-### POST: /tremendous/sendPayment
-
-Proxy endpoint for the [Tremendous API](https://developers.tremendous.com/reference/core-orders-create). This time coming from the survey. The request body is all the necessary information required to create a new order (payment) for a survey taker. This endpoint also requires a valid JWT authorization header to verify the request. 
-
-Authorization header:
-
-```
-JWT {{"token"}}
-```
-
-Request body: 
-
-    {
-        "external_id": "",
-        "funding_source_id": "",
-        "campaign_id": "",
-        "products": [""],
-        "denomination": 5.00,
-        "recipient": {"name": "new user", "email": "newuser@siue.edu"},
-        "method": "EMAIL"
-    }
-
-Notes: (1) "external_id" must be unique per new order, or else the Tremendous API will treat it as if you are requesting information on a previous order. (2) "denomination" must be a positive non-zero number. (3) "to" is the survey taker's phone number in the international (+1) format. 
-
-## Twilio
-
-### POST: /twilio/verification
-
-We are not utilizing Twilio's pre-made texting verification service, and instead we are using the standard texting service and verifying codes on our own so they can also be used for JWTs. This does require a Twilio phone number, as denoted in the .env file. This endpoint requires the request body to contain only the survey taker's phone number. 
-
-Body:
-
-    {
-        "to": "+1..."
-    }
-
-
-### POST: /twilio/verificationCheck
-
-This endpoint is not utilizing a Twilio API, and is instead verifying the survey taker's code with what the server has saved (as of now) locally. 
-
-Body:
-
-    {
-        "to": "+1...",
-        "code": "123456"
-    }
-
-## Web Client Authorization
-
-### POST: /register
-
-Allows users of the [admin client](https://github.com/o-RDS/o-rds-web-app) to register new accounts. This endpoint takes a user JSON object in the request body. 
-
-Body:
-
-    {
-        "fullname": "new user",
-        "email": "newuser@siue.edu",
-        "role": "admin",
-        "password": "mypassword"
-    }
-
-### POST: /login
-
-Takes the same user JSON object as /register and the request body and returns a temporarily valid JWT for them to use at the admin-client to access resources and use the web page. 
-
-Body:
-
-    {
-        "fullname": "new user",
-        "email": "newuser@siue.edu",
-        "role": "admin",
-        "password": "mypassword"
-    }
-
-### GET: /hiddencontent
-
-This is an example endpoint to show how content can be hidden based on the requesting user's authorization level. This endpoint will block a user from the "hidden content" if their account "role" is not "admin". This endpoint requires that the JWT token be in the `Authorization` header in the form with the actual token replacing {{"token"}}.
-
-```
-JWT {{"token"}}
-```
+[comment]: <> (This will be where we can link to the OpenAPI spec document)
+# Endpoints
