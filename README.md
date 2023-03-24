@@ -22,8 +22,13 @@ A .env file contains a list of key-value pairs which can be used as variables wi
 
 **Be sure to add .env.development to your .gitignore (or simply rename it to '.env'), so your keys are not visible on your own repository.**
 
-### 4: Startup/Deploying
+### 4: Starting and Hosting this server
+How to start this server
 
+    npm start
+
+
+This is an ExpressJS application, so there are many ways it can be hosted and publicly accessible by the [admin client](https://github.com/o-RDS/o-rds-web-app). The o-RDS team used [Railway](https://railway.app/) and we followed [this tutorial](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Express_Nodejs/deployment). 
 
 ### 5: Moving to a production environment
 There may be a number of settings/variables in the .envf file that are set a specific way during development/testing. Use the checklist below once you're ready to move to a production envrionment. 
