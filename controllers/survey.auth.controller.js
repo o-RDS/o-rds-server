@@ -51,7 +51,7 @@ exports.verification = (req, res) => {
             .create({
               body: message,
               from: process.env.TWILIO_PHONE_NUMBER,
-              to: phone_number.phone_number,
+              to: phone_number.phoneNumber,
             })
             .then((message) => {
               if (message.error_code == null) {
@@ -64,12 +64,11 @@ exports.verification = (req, res) => {
                       .send({ message: "Survey taker not saved." });
                     return;
                   }
-                  res
-                    .status(200)
-                    .send({
-                      message:
-                        "Survey taker registered successfully. Verification code has been sent.",
-                    });
+                  res.status(200).send({
+                    phoneNumber: phone_number.phoneNumber,
+                    message:
+                      "Survey taker registered successfully. Verification code has been sent.",
+                  });
                   console.log("New survey taker registered");
                 });
               } else {
