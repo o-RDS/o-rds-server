@@ -15,26 +15,12 @@ exports.verification = (req, res) => {
   // get the phone number from req
   var to = req.body.to;
 
-  // hash the phone number
-  const hash = crypto.createHash("sha256").update(to).digest("base64");
-  const cleanHash = hash
-    .replaceAll("\\", "x")
-    .replaceAll("/", "y")
-    .replaceAll("+", "z");
-  console.log(cleanHash);
-
   // create code and message
   const code = Math.floor(100000 + Math.random() * 900000);
   console.log(code);
   const message = `Hello, your o-RDS verification code is: ${code}`;
 
   var date = new Date();
-  // create survey taker
-  var surveyTaker = {
-    hash: cleanHash,
-    code: bcrypt.hashSync(code.toString(), 8),
-    timeCreated: date,
-  };
 
   // send them their code
   if (TESTING != "true") {
@@ -56,6 +42,22 @@ exports.verification = (req, res) => {
             .then((message) => {
               if (message.error_code == null) {
                 // message sent successfully
+                // create hash
+                const hash = crypto
+                  .createHash("sha256")
+                  .update(phone_number.phoneNumber)
+                  .digest("base64");
+                const cleanHash = hash
+                  .replaceAll("\\", "x")
+                  .replaceAll("/", "y")
+                  .replaceAll("+", "z");
+                console.log(cleanHash);
+                // create survey taker
+                var surveyTaker = {
+                  hash: cleanHash,
+                  code: bcrypt.hashSync(code.toString(), 8),
+                  timeCreated: date,
+                };
                 saveUserToFolder(surveyTaker, function (err) {
                   if (err) {
                     console.log(err);
