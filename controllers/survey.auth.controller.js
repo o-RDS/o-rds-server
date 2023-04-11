@@ -15,6 +15,10 @@ exports.verification = (req, res) => {
   // get the phone number from req
   var to = req.body.to;
 
+  if (!to) {
+    res.status(400).send({ message: "Invalid phone number" });
+    return;
+  }  
   // create code and message
   const code = Math.floor(100000 + Math.random() * 900000);
   console.log(code);
@@ -30,7 +34,7 @@ exports.verification = (req, res) => {
         .fetch()
         .then((phone_number) => {
           if (phone_number.valid == false) {
-            res.status(500).send({ message: "Invalid phone number." });
+            res.status(400).send({ message: "Invalid phone number" });
             return;
           }
           client.messages
